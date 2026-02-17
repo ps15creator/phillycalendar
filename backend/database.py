@@ -40,10 +40,15 @@ class EventDatabase:
 
         except ImportError:
             logger.error("psycopg2 not installed. Install with: pip install psycopg2-binary")
-            raise
+            self.pg_pool = None
+            self.use_postgres = False
+            self.init_sqlite_database()
         except Exception as e:
             logger.error(f"Error setting up PostgreSQL: {e}")
-            raise
+            # Fall back to SQLite so the app still starts
+            self.pg_pool = None
+            self.use_postgres = False
+            self.init_sqlite_database()
 
     def get_connection(self):
         """Get database connection (SQLite or PostgreSQL)"""
