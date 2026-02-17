@@ -6,10 +6,19 @@ Fetches real events via Sanity.io GROQ API (no auth required for published conte
 import requests
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Optional
 from urllib.parse import quote
 from .base_scraper import BaseScraper
+
+# Eastern time offset (UTC-5 standard, UTC-4 daylight)
+# Python's datetime doesn't auto-detect DST for a naive target, so we use
+# the zoneinfo module (Python 3.9+) for proper DST-aware conversion.
+try:
+    from zoneinfo import ZoneInfo
+    _EASTERN = ZoneInfo('America/New_York')
+except ImportError:
+    _EASTERN = None
 
 logger = logging.getLogger(__name__)
 
@@ -33,15 +42,17 @@ class PhilaMuseumScraper(BaseScraper):
 
     def scrape(self) -> List[Dict]:
         events = []
-        today = datetime.now().strftime('%Y-%m-%dT00:00:00Z')
+        # Use current UTC time as the cutoff so we match the Sanity UTC timestamps
+        now_utc = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         # GROQ query: get events with upcoming active occurrences
+        # Limit to next 3 occurrences per event to avoid flooding the calendar
         groq_query = f'''*[_type=="event"] {{
   title,
   "slug": slug.current,
   cardDescription,
   "upcomingOccurrences": occurrences[
-    status=="active" && start >= "{today}"
+    status=="active" && start >= "{now_utc}"
   ] | order(start asc) [0..5] {{start, end, status}}
 }} [defined(upcomingOccurrences) && count(upcomingOccurrences) > 0]
 | order(upcomingOccurrences[0].start asc) [0..100]'''
@@ -90,8 +101,8 @@ class PhilaMuseumScraper(BaseScraper):
                 if not start_date or start_date < datetime.now():
                     continue
 
-                # Deduplicate by title+date
-                key = f"{title}_{start_str[:10]}"
+                # Deduplicate by title+full datetime (multiple time slots per day exist)
+                key = f"{title}_{start_str[:16]}"
                 if key in seen:
                     continue
                 seen.add(key)
@@ -114,16 +125,25 @@ class PhilaMuseumScraper(BaseScraper):
         return results
 
     def _parse_date(self, date_str: str) -> Optional[datetime]:
+        """Parse a UTC ISO timestamp and convert to Eastern local time (naive datetime)."""
         if not date_str:
             return None
         try:
-            clean = date_str.split('+')[0].split('Z')[0]
-            if 'T' in clean and len(clean) > 19:
-                clean = clean[:19]
-            return datetime.fromisoformat(clean)
-        except Exception:
-            try:
-                from dateutil import parser as dp
-                return dp.parse(date_str).replace(tzinfo=None)
-            except Exception:
-                return None
+            # Sanity returns UTC timestamps like "2026-02-20T23:00:00.000Z"
+            # Parse as UTC-aware datetime, then convert to Eastern
+            clean = date_str.rstrip('Z')
+            if '.' in clean:
+                clean = clean.split('.')[0]  # strip milliseconds
+            # Parse as UTC
+            dt_utc = datetime.fromisoformat(clean).replace(tzinfo=timezone.utc)
+            # Convert to Eastern time
+            if _EASTERN:
+                dt_eastern = dt_utc.astimezone(_EASTERN)
+            else:
+                # Fallback: UTC-5 (EST); good enough if zoneinfo unavailable
+                dt_eastern = dt_utc.astimezone(timezone(timedelta(hours=-5)))
+            # Return as naive datetime (strip timezone info) — stored as Eastern time
+            return dt_eastern.replace(tzinfo=None)
+        except Exception as e:
+            logger.debug(f"Date parse error for '{date_str}': {e}")
+            return None
