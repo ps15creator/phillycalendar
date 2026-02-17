@@ -10,6 +10,7 @@ from scrapers import SCRAPERS
 import logging
 from datetime import datetime
 import os
+import threading
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -116,47 +117,32 @@ def search_events():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+def run_scrape_job():
+    """Run all scrapers in the background and store results."""
+    logger.info("Background scrape job started...")
+    total_scraped = 0
+    for ScraperClass in SCRAPERS:
+        try:
+            scraper = ScraperClass()
+            events = scraper.scrape()
+            added = db.add_events_batch(events)
+            total_scraped += added
+            logger.info(f"[scrape] {scraper.source_name}: {len(events)} scraped, {added} added")
+        except Exception as e:
+            logger.error(f"[scrape] Error with {ScraperClass.__name__}: {e}")
+    logger.info(f"Background scrape job done — {total_scraped} new events added.")
+
+
 @app.route('/scrape', methods=['POST'])
 def scrape_events():
-    """Manually trigger event scraping"""
-    try:
-        logger.info("Starting manual scrape...")
-        total_scraped = 0
-        scrape_results = []
-
-        for ScraperClass in SCRAPERS:
-            try:
-                scraper = ScraperClass()
-                events = scraper.scrape()
-                added = db.add_events_batch(events)
-
-                result = {
-                    'source': scraper.source_name,
-                    'scraped': len(events),
-                    'added': added
-                }
-                scrape_results.append(result)
-                total_scraped += added
-
-                logger.info(f"{scraper.source_name}: {len(events)} scraped, {added} added")
-
-            except Exception as e:
-                logger.error(f"Error with {ScraperClass.__name__}: {e}")
-                scrape_results.append({
-                    'source': ScraperClass.__name__,
-                    'error': str(e)
-                })
-
-        return jsonify({
-            'success': True,
-            'total_added': total_scraped,
-            'results': scrape_results,
-            'timestamp': datetime.now().isoformat()
-        })
-
-    except Exception as e:
-        logger.error(f"Error during scraping: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+    """Trigger event scraping in the background (returns 202 immediately)."""
+    t = threading.Thread(target=run_scrape_job, daemon=True)
+    t.start()
+    return jsonify({
+        'success': True,
+        'message': 'Scrape started in background — check server logs for progress.',
+        'timestamp': datetime.now().isoformat()
+    }), 202
 
 
 @app.route('/stats', methods=['GET'])
