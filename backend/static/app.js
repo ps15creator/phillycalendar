@@ -139,7 +139,7 @@ function applyFilters() {
 
         let matchesMonth = true;
         if (currentMonth !== 'all') {
-            const eventDate = new Date(event.start_date);
+            const eventDate = parseLocalDate(event.start_date);
             const eventMonthYear = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
             matchesMonth = eventMonthYear === currentMonth;
         }
@@ -158,7 +158,7 @@ function populateMonthFilter() {
     const months = new Set();
 
     allEvents.forEach(event => {
-        const date = new Date(event.start_date);
+        const date = parseLocalDate(event.start_date);
         const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         months.add(monthYear);
     });
@@ -213,7 +213,7 @@ function handleSearch(e) {
 
         let matchesMonth = true;
         if (currentMonth !== 'all') {
-            const eventDate = new Date(event.start_date);
+            const eventDate = parseLocalDate(event.start_date);
             const eventMonthYear = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
             matchesMonth = eventMonthYear === currentMonth;
         }
@@ -271,7 +271,7 @@ function renderMobileGroupedView() {
     const eventsByDate = {};
 
     filteredEvents.forEach((event, index) => {
-        const date = new Date(event.start_date);
+        const date = parseLocalDate(event.start_date);
         const dateKey = date.toLocaleDateString('en-US', {
             weekday: 'long',
             year: 'numeric',
@@ -288,11 +288,11 @@ function renderMobileGroupedView() {
     // Sort dates
     const sortedDates = Object.keys(eventsByDate).sort((a, b) => {
         const dateA = new Date(filteredEvents.find(e => {
-            const d = new Date(e.start_date);
+            const d = parseLocalDate(e.start_date);
             return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) === a;
         }).start_date);
         const dateB = new Date(filteredEvents.find(e => {
-            const d = new Date(e.start_date);
+            const d = parseLocalDate(e.start_date);
             return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) === b;
         }).start_date);
         return dateA - dateB;
@@ -319,7 +319,7 @@ function renderMobileGroupedView() {
 
 // Create mobile event item
 function createMobileEventItem(event, index) {
-    const startDate = new Date(event.start_date);
+    const startDate = parseLocalDate(event.start_date);
     const categoryClass = `category-${event.category}`;
     const categoryName = getCategoryName(event.category);
     const hasTime = startDate.getHours() !== 0 || startDate.getMinutes() !== 0;
@@ -342,7 +342,7 @@ function createMobileEventItem(event, index) {
 
 // Create event card HTML
 function createEventCard(event) {
-    const startDate = new Date(event.start_date);
+    const startDate = parseLocalDate(event.start_date);
     const categoryClass = `category-${event.category}`;
     const categoryName = getCategoryName(event.category);
 
@@ -366,7 +366,7 @@ function createEventCard(event) {
 function showEventDetail(event) {
     const modal = document.getElementById('eventModal');
     const modalBody = document.getElementById('modalBody');
-    const startDate = new Date(event.start_date);
+    const startDate = parseLocalDate(event.start_date);
     const categoryName = getCategoryName(event.category);
 
     const isBookmarked = bookmarkedIds.has(event.id);
@@ -400,7 +400,7 @@ function showEventDetail(event) {
         ${event.registration_deadline ? `
         <div class="modal-detail">
             <strong>⏰ Registration Deadline</strong><br>
-            ${new Date(event.registration_deadline).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            ${parseLocalDate(event.registration_deadline).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
         ` : ''}
 
@@ -476,6 +476,24 @@ function showEmptyState() {
 function showNotification(message, type = 'success') {
     // Simple alert for now - could be enhanced with toast notifications
     alert(message);
+}
+
+// Parse a date string from the server as LOCAL time (not UTC)
+// Server stores Eastern time without timezone suffix, so we must not let
+// JavaScript treat it as UTC (which would subtract 5 hours)
+function parseLocalDate(dateStr) {
+    if (!dateStr) return new Date();
+    // Replace space separator with T, strip timezone suffix if any
+    const clean = dateStr.replace(' ', 'T').split('+')[0].replace('Z', '');
+    // Parse as local time by splitting manually
+    const [datePart, timePart] = clean.split('T');
+    if (!datePart) return new Date(dateStr);
+    const [year, month, day] = datePart.split('-').map(Number);
+    if (timePart) {
+        const [hour, minute, second] = timePart.split(':').map(Number);
+        return new Date(year, month - 1, day, hour || 0, minute || 0, second || 0);
+    }
+    return new Date(year, month - 1, day);
 }
 
 // Format date
@@ -566,15 +584,15 @@ function openEditEventModal(eventId) {
 
     // Convert ISO dates to datetime-local format (YYYY-MM-DDTHH:MM)
     if (event.start_date) {
-        const d = new Date(event.start_date);
+        const d = parseLocalDate(event.start_date);
         document.getElementById('eventStartDate').value = toDatetimeLocal(d);
     }
     if (event.end_date) {
-        const d = new Date(event.end_date);
+        const d = parseLocalDate(event.end_date);
         document.getElementById('eventEndDate').value = toDatetimeLocal(d);
     }
     if (event.registration_deadline) {
-        const d = new Date(event.registration_deadline);
+        const d = parseLocalDate(event.registration_deadline);
         document.getElementById('eventRegDeadline').value = toDatetimeLocal(d);
     }
 
@@ -721,7 +739,7 @@ async function showBookmarks() {
         }
 
         const bookmarkRows = data.bookmarks.map(event => {
-            const date = new Date(event.start_date);
+            const date = parseLocalDate(event.start_date);
             return `
                 <div class="bookmark-row" onclick="showBookmarkedEvent(${event.id})" style="cursor:pointer">
                     <div class="bookmark-title">${event.title}</div>
