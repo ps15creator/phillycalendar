@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philadelphia Events Calendar</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🔔 Philadelphia Events Calendar</h1>
+            <p class="subtitle">Never miss a great event in the city</p>
+        </header>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search events...">
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-category="all">All Events</button>
+                <button class="filter-btn" data-category="running">🏃 Running</button>
+                <button class="filter-btn" data-category="artsAndCulture">🎨 Arts</button>
+                <button class="filter-btn" data-category="music">🎵 Music</button>
+                <button class="filter-btn" data-category="foodAndDrink">🍽️ Food</button>
+                <button class="filter-btn" data-category="community">👥 Community</button>
+            </div>
+
+            <div class="month-filter">
+                <label for="monthSelect">📅 Filter by Month:</label>
+                <select id="monthSelect" class="month-select">
+                    <option value="all">All Months</option>
+                </select>
+            </div>
+
+            <div class="source-filter">
+                <label for="sourceSelect">🔗 Filter by Source:</label>
+                <select id="sourceSelect" class="source-select">
+                    <option value="all">All Sources</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button id="addEventBtn" class="btn btn-success">➕ Add Event</button>
+                <button id="bookmarksBtn" class="btn btn-primary">⭐ My Bookmarks</button>
+                <button id="refreshBtn" class="btn btn-primary">🔄 Refresh Events</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalEvents">0</span>
+                <span class="stat-label">Total Events</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="upcomingEvents">0</span>
+                <span class="stat-label">Upcoming</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="lastSync">Never</span>
+                <span class="stat-label">Last Updated</span>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading events...</p>
+        </div>
+
+        <!-- Events List -->
+        <div id="eventsContainer" class="events-container">
+            <!-- Events will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <p>📅 No events yet. Click <strong>➕ Add Event</strong> to add your first event!</p>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Made with ❤️ for Philadelphia | Auto-updated every 12 hours</p>
+        </footer>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div id="eventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalBody">
+                <!-- Event details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Event Modal -->
+    <div id="addEventModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeAddEventModal">&times;</span>
+            <h2 id="eventFormTitle" class="modal-title">Add New Event</h2>
+            <form id="eventForm">
+                <input type="hidden" id="eventId" name="eventId">
+
+                <div class="form-group">
+                    <label for="eventTitle">Event Title *</label>
+                    <input type="text" id="eventTitle" name="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" name="description" rows="4"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventStartDate">Start Date & Time *</label>
+                        <input type="datetime-local" id="eventStartDate" name="start_date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventEndDate">End Date & Time</label>
+                        <input type="datetime-local" id="eventEndDate" name="end_date">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventLocation">Location *</label>
+                    <input type="text" id="eventLocation" name="location" required placeholder="e.g., Love Park, 1234 Market St">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventCategory">Category *</label>
+                        <select id="eventCategory" name="category" required>
+                            <option value="">Select category...</option>
+                            <option value="running">🏃 Running</option>
+                            <option value="artsAndCulture">🎨 Arts & Culture</option>
+                            <option value="music">🎵 Music</option>
+                            <option value="foodAndDrink">🍽️ Food & Drink</option>
+                            <option value="community">👥 Community</option>
+                            <option value="other">📌 Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventPrice">Price</label>
+                        <input type="text" id="eventPrice" name="price" placeholder="e.g., Free, $25, $10-20">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventSource">Source / Organizer</label>
+                    <input type="text" id="eventSource" name="source" placeholder="e.g., @loveparkphilly, Visit Philly">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventSourceUrl">Event Website/Link</label>
+                    <input type="url" id="eventSourceUrl" name="source_url" placeholder="https://...">
+                </div>
+
+                <div class="form-group">
+                    <label for="eventRegDeadline">Registration Deadline</label>
+                    <input type="datetime-local" id="eventRegDeadline" name="registration_deadline">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">💾 Save Event</button>
+                    <button type="button" id="cancelEventForm" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('✅ Offline access enabled!'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    </script>
+</body>
+</html>
