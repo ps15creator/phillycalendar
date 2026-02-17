@@ -481,11 +481,31 @@ function showNotification(message, type = 'success') {
 // Parse a date string from the server as LOCAL time (not UTC)
 // Server stores Eastern time without timezone suffix, so we must not let
 // JavaScript treat it as UTC (which would subtract 5 hours)
+// Handles both ISO format ("2026-02-18T19:30:00") and
+// RFC 2822 format ("Wed, 18 Feb 2026 19:30:00 GMT") returned by Flask
 function parseLocalDate(dateStr) {
     if (!dateStr) return new Date();
+
+    // Detect RFC 2822 format: "Wed, 18 Feb 2026 19:30:00 GMT"
+    // Flask's jsonify serializes Python datetimes in this format
+    const rfc2822 = /^[A-Za-z]{3},\s+(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\s+GMT$/;
+    const m = dateStr.match(rfc2822);
+    if (m) {
+        const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
+                         Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+        const day   = parseInt(m[1], 10);
+        const month = months[m[2]];
+        const year  = parseInt(m[3], 10);
+        const hour  = parseInt(m[4], 10);
+        const min   = parseInt(m[5], 10);
+        const sec   = parseInt(m[6], 10);
+        // Construct as local time (ignoring GMT suffix — server stores Eastern time)
+        return new Date(year, month, day, hour, min, sec);
+    }
+
+    // ISO format: "2026-02-18T19:30:00" or "2026-02-18 19:30:00"
     // Replace space separator with T, strip timezone suffix if any
     const clean = dateStr.replace(' ', 'T').split('+')[0].replace('Z', '');
-    // Parse as local time by splitting manually
     const [datePart, timePart] = clean.split('T');
     if (!datePart) return new Date(dateStr);
     const [year, month, day] = datePart.split('-').map(Number);
