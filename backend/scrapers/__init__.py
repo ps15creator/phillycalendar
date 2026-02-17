@@ -17,6 +17,8 @@ from .muralarts_scraper import MuralArtsScraper
 from .southstreet_scraper import SouthStreetScraper
 from .phillymagicgardens_scraper import PhillyMagicGardensScraper
 from .oldcity_scraper import OldCityScraper
+from .ourphilly_scraper import OurPhillyScraper
+from .philamuseum_scraper import PhilaMuseumScraper
 
 # Active scrapers fetching real events from live websites
 SCRAPERS = [
@@ -30,7 +32,9 @@ SCRAPERS = [
     SouthStreetScraper,         # South Street Headhouse District (JSON-LD)
     PhillyMagicGardensScraper,  # Philadelphia Magic Gardens (WP REST API)
     OldCityScraper,             # Old City District (HTML + time elements)
-    # MuralArtsScraper excluded — JS-rendered, returns 0 without headless browser
+    OurPhillyScraper,           # OurPhilly.org Supabase API (360 annual events)
+    PhilaMuseumScraper,         # Philadelphia Museum of Art Sanity API (102+ events)
+    MuralArtsScraper,           # Mural Arts Philadelphia (window.events JS variable)
 ]
 
 __all__ = [
@@ -39,5 +43,5 @@ __all__ = [
     'MilkBoyScraper', 'JohnnyBrendasScraper', 'FillmoreScraper',
     'ReadingTerminalScraper', 'BarnesScraper', 'MuralArtsScraper',
     'SouthStreetScraper', 'PhillyMagicGardensScraper', 'OldCityScraper',
-    'SCRAPERS'
+    'OurPhillyScraper', 'PhilaMuseumScraper', 'SCRAPERS'
 ]
