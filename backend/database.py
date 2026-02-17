@@ -260,20 +260,16 @@ class EventDatabase:
                 if not title or not start_date:
                     continue
 
-                # Skip if duplicate (same source_url or same title+date)
+                # Skip if duplicate: always match on title + start_date (unique per time slot).
+                # Do NOT deduplicate by source_url alone — recurring events share the same
+                # source_url for multiple time slots on the same or different days.
                 conn = self.get_connection()
                 cursor = conn.cursor()
                 placeholder = '%s' if self.use_postgres else '?'
-                if source_url:
-                    cursor.execute(
-                        f'SELECT id FROM events WHERE source_url = {placeholder} LIMIT 1',
-                        (source_url,)
-                    )
-                else:
-                    cursor.execute(
-                        f'SELECT id FROM events WHERE title = {placeholder} AND start_date = {placeholder} LIMIT 1',
-                        (title, start_date)
-                    )
+                cursor.execute(
+                    f'SELECT id FROM events WHERE title = {placeholder} AND start_date = {placeholder} LIMIT 1',
+                    (title, start_date)
+                )
                 exists = cursor.fetchone()
                 self.release_connection(conn)
 
