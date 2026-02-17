@@ -10,6 +10,7 @@ requests==2.31.0
 
 # Date Parsing
 python-dateutil==2.8.2
+tzdata==2024.1
 
 # Scheduling
 apscheduler==3.10.4

@@ -136,12 +136,17 @@ class PhilaMuseumScraper(BaseScraper):
                 clean = clean.split('.')[0]  # strip milliseconds
             # Parse as UTC
             dt_utc = datetime.fromisoformat(clean).replace(tzinfo=timezone.utc)
-            # Convert to Eastern time
+            # Convert to Eastern time — try zoneinfo first (DST-aware), then dateutil, then fixed offset
             if _EASTERN:
                 dt_eastern = dt_utc.astimezone(_EASTERN)
             else:
-                # Fallback: UTC-5 (EST); good enough if zoneinfo unavailable
-                dt_eastern = dt_utc.astimezone(timezone(timedelta(hours=-5)))
+                try:
+                    from dateutil import tz as dateutil_tz
+                    eastern = dateutil_tz.gettz('America/New_York')
+                    dt_eastern = dt_utc.astimezone(eastern)
+                except Exception:
+                    # Last resort: fixed UTC-5 (EST). May be 1hr off during EDT but better than UTC.
+                    dt_eastern = dt_utc.astimezone(timezone(timedelta(hours=-5)))
             # Return as naive datetime (strip timezone info) — stored as Eastern time
             return dt_eastern.replace(tzinfo=None)
         except Exception as e:
