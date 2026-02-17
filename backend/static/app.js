@@ -16,14 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkForUpdates();
 });
 
-// Re-render on window resize to switch between mobile/desktop views
-let resizeTimeout;
-window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-        renderEvents();
-    }, 250);
-});
+// (No resize re-render needed — unified day-grouped view works at all sizes)
 
 // Setup event listeners
 function setupEventListeners() {
@@ -232,7 +225,7 @@ function handleSearch(e) {
     renderEvents();
 }
 
-// Render events to DOM
+// Render events to DOM — unified day-grouped view for all screen sizes
 function renderEvents() {
     const container = document.getElementById('eventsContainer');
     const emptyState = document.getElementById('emptyState');
@@ -244,122 +237,94 @@ function renderEvents() {
     }
 
     emptyState.style.display = 'none';
+    container.innerHTML = renderGroupedByDay();
 
-    // Check if mobile view
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-        container.innerHTML = renderMobileGroupedView();
-    } else {
-        container.innerHTML = filteredEvents.map(event => createEventCard(event)).join('');
-    }
-
-    // Add click listeners
-    document.querySelectorAll('.event-card, .mobile-event-item').forEach((element, index) => {
-        element.addEventListener('click', () => {
-            const event = isMobile ?
-                element.dataset.eventIndex ? filteredEvents[parseInt(element.dataset.eventIndex)] : null :
-                filteredEvents[index];
-            if (event) showEventDetail(event);
+    // Attach click listeners to all event rows
+    document.querySelectorAll('.event-row').forEach(row => {
+        row.addEventListener('click', () => {
+            const idx = parseInt(row.dataset.eventIndex);
+            if (!isNaN(idx) && filteredEvents[idx]) showEventDetail(filteredEvents[idx]);
         });
     });
 }
 
-// Render mobile grouped view by day
-function renderMobileGroupedView() {
-    // Group events by date
-    const eventsByDate = {};
+// Group events by calendar day and render as a clean list
+function renderGroupedByDay() {
+    // Build a map: "YYYY-MM-DD" → [{event, index}, ...]
+    const byDay = {};
+    const dayOrder = [];
 
     filteredEvents.forEach((event, index) => {
-        const date = parseLocalDate(event.start_date);
-        const dateKey = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        if (!eventsByDate[dateKey]) {
-            eventsByDate[dateKey] = [];
+        const d = parseLocalDate(event.start_date);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (!byDay[key]) {
+            byDay[key] = [];
+            dayOrder.push(key);
         }
-        eventsByDate[dateKey].push({ event, index });
+        byDay[key].push({ event, index });
     });
 
-    // Sort dates
-    const sortedDates = Object.keys(eventsByDate).sort((a, b) => {
-        const dateA = new Date(filteredEvents.find(e => {
-            const d = parseLocalDate(e.start_date);
-            return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) === a;
-        }).start_date);
-        const dateB = new Date(filteredEvents.find(e => {
-            const d = parseLocalDate(e.start_date);
-            return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) === b;
-        }).start_date);
-        return dateA - dateB;
-    });
+    dayOrder.sort();
 
-    // Render grouped events
-    return sortedDates.map(dateKey => {
-        const dayEvents = eventsByDate[dateKey];
-        const eventsHtml = dayEvents.map(({ event, index }) => createMobileEventItem(event, index)).join('');
+    return dayOrder.map(key => {
+        const [year, month, day] = key.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
+        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
+        const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const items = byDay[key];
+        const isToday = key === todayKey();
 
         return `
-            <div class="mobile-day-group">
-                <div class="mobile-day-header">
-                    <span class="mobile-day-date">📅 ${dateKey}</span>
-                    <span class="mobile-day-count">${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}</span>
+        <div class="day-group">
+            <div class="day-header">
+                <div class="day-header-left">
+                    <span class="day-weekday">${isToday ? '📍 Today' : weekday}</span>
+                    <span class="day-date">${dateStr}</span>
                 </div>
-                <div class="mobile-events-list">
-                    ${eventsHtml}
-                </div>
+                <span class="day-count">${items.length} event${items.length !== 1 ? 's' : ''}</span>
             </div>
-        `;
+            ${items.map(({ event, index }) => createEventRow(event, index)).join('')}
+        </div>`;
     }).join('');
 }
 
-// Create mobile event item
-function createMobileEventItem(event, index) {
-    const startDate = parseLocalDate(event.start_date);
-    const categoryClass = `category-${event.category}`;
-    const categoryName = getCategoryName(event.category);
-    const hasTime = startDate.getHours() !== 0 || startDate.getMinutes() !== 0;
-    const timeStr = hasTime ?
-        startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) :
-        'Time TBD';
-
-    return `
-        <div class="mobile-event-item" data-event-index="${index}">
-            <div class="mobile-event-time">${timeStr}</div>
-            <div class="mobile-event-details">
-                <span class="event-category ${categoryClass}">${categoryName}</span>
-                <div class="mobile-event-title">${event.title}</div>
-                <div class="mobile-event-location">📍 ${event.location}</div>
-                ${event.price ? `<div class="mobile-event-price">💰 ${event.price}</div>` : ''}
-            </div>
-        </div>
-    `;
+function todayKey() {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 }
 
-// Create event card HTML
-function createEventCard(event) {
+// Create a single event row within a day group
+function createEventRow(event, index) {
     const startDate = parseLocalDate(event.start_date);
+    const hasTime = startDate.getHours() !== 0 || startDate.getMinutes() !== 0;
+    const timeStr = hasTime
+        ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        : '';
     const categoryClass = `category-${event.category}`;
     const categoryName = getCategoryName(event.category);
+    const location = event.location || '';
+    const price = event.price || '';
 
     return `
-        <div class="event-card">
-            ${event.image_url ? `<img src="${event.image_url}" class="event-image" alt="${event.title}">` : '<div class="event-image"></div>'}
-            <div class="event-content">
+    <div class="event-row" data-event-index="${index}">
+        <div class="event-time-col">
+            ${hasTime
+                ? `<span class="event-time">${timeStr}</span>`
+                : `<span class="event-time-tbd">TBD</span>`}
+        </div>
+        <div class="event-row-divider"></div>
+        <div class="event-details-col">
+            <div class="event-row-top">
+                <span class="event-row-title">${event.title}</span>
                 <span class="event-category ${categoryClass}">${categoryName}</span>
-                <h3 class="event-title">${event.title}</h3>
-                <div class="event-date">📅 ${formatDate(startDate)}</div>
-                <div class="event-location">📍 ${event.location}</div>
-                ${event.price ? `<div class="event-price">💰 ${event.price}</div>` : ''}
-                <p class="event-description">${event.description}</p>
-                <div class="event-source">Source: ${event.source}</div>
+            </div>
+            <div class="event-row-meta">
+                ${location ? `<span class="event-row-location">📍 ${location}</span>` : ''}
+                ${price ? `<span class="event-row-price">💰 ${price}</span>` : ''}
             </div>
         </div>
-    `;
+        <span class="chevron">›</span>
+    </div>`;
 }
 
 // Show event detail modal
