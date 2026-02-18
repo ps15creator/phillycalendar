@@ -362,9 +362,11 @@ header h1 {
 }
 
 .event-time-tbd {
-    font-size: 0.78em;
-    color: #bbb;
-    font-style: italic;
+    font-size: 1em;
+    color: #ccc;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
 }
 
 /* Divider line between time and details */

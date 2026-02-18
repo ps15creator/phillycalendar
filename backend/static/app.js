@@ -310,7 +310,7 @@ function createEventRow(event, index) {
         <div class="event-time-col">
             ${hasTime
                 ? `<span class="event-time">${timeStr}</span>`
-                : `<span class="event-time-tbd">TBD</span>`}
+                : `<span class="event-time-tbd">—</span>`}
         </div>
         <div class="event-row-divider"></div>
         <div class="event-details-col">
@@ -525,7 +525,7 @@ function formatDateLong(date) {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-        }) + ' (Time TBD)';
+        });
     }
 }
 
