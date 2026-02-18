@@ -115,11 +115,6 @@ def _start_scheduler():
     logger.info('Scheduler started: auto-scrape every 4 h, cleanup daily at 3 AM')
 
 
-# Start scheduler only in the main process (not in gunicorn worker reloads)
-if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-    _start_scheduler()
-
-
 @app.route('/')
 def home():
     """Serve the web calendar"""
@@ -440,6 +435,12 @@ def notification_settings():
     except Exception as e:
         logger.error(f"Error with notification settings: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Start scheduler after all functions are defined
+# Guard prevents duplicate start in Flask debug reloader; gunicorn doesn't set this var
+if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+    _start_scheduler()
 
 
 if __name__ == '__main__':
