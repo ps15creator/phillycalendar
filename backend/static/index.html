@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philly Events — Your City, Your Calendar</title>
-    <link rel="stylesheet" href="/static/styles.css?v=4">
+    <meta name="description" content="Discover concerts, races, festivals, and neighborhood events across Philadelphia. One calendar, auto-updated every 4 hours.">
+    <link rel="stylesheet" href="/static/styles.css?v=8">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
@@ -14,6 +15,10 @@
          ====================================================== -->
     <header class="site-header">
         <div class="header-inner">
+            <div class="header-logo-wrap">
+                <img src="/static/images/eagles-logo.png" alt="Philadelphia Eagles" class="header-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                <span class="header-logo-fallback" aria-hidden="true" style="display: none;">🦅</span>
+            </div>
             <div class="header-brand">
                 <h1>🔔 Philly <span class="red">Events</span> <span class="gold">Calendar</span></h1>
                 <p class="header-tagline">🦅 Your city. Your events. Never miss a thing.</p>
@@ -29,8 +34,9 @@
     <!-- ======================================================
          HERO BANNER
          ====================================================== -->
-    <section class="hero-banner" id="heroBanner">
-        <span class="hero-close" onclick="document.getElementById('heroBanner').style.display='none'" title="Dismiss">×</span>
+    <section class="hero-banner" id="heroBanner" aria-label="Welcome banner">
+        <div class="hero-bg-image" id="heroBgImage" role="presentation"></div>
+        <button type="button" class="hero-close" id="heroCloseBtn" aria-label="Dismiss banner" title="Dismiss">×</button>
         <div class="hero-content">
             <h2>Your <span class="accent-gold">Philadelphia</span><br>Event <span class="accent-red">Hub</span></h2>
             <p>
@@ -72,9 +78,11 @@
         <!-- Controls Panel -->
         <div class="controls-panel">
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search events, venues, artists...">
+                <label for="searchInput">Search events, venues, artists</label>
+                <input type="text" id="searchInput" placeholder="Search events, venues, artists..." aria-label="Search events, venues, artists">
             </div>
 
+            <div class="filter-row-wrap" id="filterRowWrap">
             <div class="filter-row">
                 <button class="filter-btn active" data-category="all">All Events</button>
                 <button class="filter-btn" data-category="running">🏃 Running</button>
@@ -82,6 +90,7 @@
                 <button class="filter-btn" data-category="artsAndCulture">🎨 Arts</button>
                 <button class="filter-btn" data-category="foodAndDrink">🍽️ Food</button>
                 <button class="filter-btn" data-category="community">👥 Community</button>
+            </div>
             </div>
 
             <div class="controls-bottom">
@@ -111,11 +120,12 @@
         <!-- Events Container -->
         <div id="eventsContainer" class="events-container"></div>
 
-        <!-- Empty State -->
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <p style="font-size:2.5em; margin-bottom:12px;">🔔</p>
-            <p style="font-weight:700; font-size:1.1em; color:#333; margin-bottom:8px;">No events found</p>
-            <p>Try adjusting your filters or check back soon!</p>
+        <!-- Empty State (generic and filtered variants filled by JS) -->
+        <div id="emptyState" class="empty-state" style="display: none;" role="status">
+            <p class="empty-icon" id="emptyIcon">🔔</p>
+            <p class="empty-title" id="emptyTitle">No events found</p>
+            <p class="empty-desc" id="emptyDesc">Try adjusting your filters or check back soon!</p>
+            <div id="emptyActions"></div>
         </div>
 
         </main>
@@ -124,21 +134,29 @@
          FOOTER
          ====================================================== -->
     <footer class="site-footer">
+        <div class="footer-pride" aria-label="Philadelphia teams and landmarks">
+            <a href="https://www.philadelphiaeagles.com" target="_blank" rel="noopener noreferrer" class="footer-pride-item eagles" title="Philadelphia Eagles" aria-label="Philadelphia Eagles"><span aria-hidden="true">E</span></a>
+            <a href="https://www.mlb.com/phillies" target="_blank" rel="noopener noreferrer" class="footer-pride-item phillies" title="Philadelphia Phillies" aria-label="Philadelphia Phillies"><span aria-hidden="true">P</span></a>
+            <a href="https://www.nba.com/sixers" target="_blank" rel="noopener noreferrer" class="footer-pride-item sixers" title="Philadelphia 76ers" aria-label="Philadelphia 76ers"><span aria-hidden="true">76</span></a>
+            <a href="https://www.nhl.com/flyers" target="_blank" rel="noopener noreferrer" class="footer-pride-item flyers" title="Philadelphia Flyers" aria-label="Philadelphia Flyers"><span aria-hidden="true">F</span></a>
+            <a href="https://www.philadelphiaunion.com" target="_blank" rel="noopener noreferrer" class="footer-pride-item union" title="Philadelphia Union" aria-label="Philadelphia Union"><span aria-hidden="true">U</span></a>
+            <a href="https://www.nps.gov/inde/liberty-bell-center.htm" target="_blank" rel="noopener noreferrer" class="footer-pride-item liberty" title="Liberty Bell" aria-label="Liberty Bell"><span aria-hidden="true">🔔</span></a>
+        </div>
         <p class="footer-brand">🔔 Philly Events Calendar &nbsp;·&nbsp; E-A-G-L-E-S 🦅</p>
-        <p><a href="https://phillycalendar.onrender.com" target="_blank">phillycalendar.onrender.com</a></p>
+        <p><a href="https://phillycalendar.onrender.com" target="_blank" rel="noopener noreferrer">phillycalendar.onrender.com</a></p>
         <p class="footer-sub">Events refreshed every 4 hours · Data sourced from local Philly venues &amp; sites</p>
         <p class="footer-sub" style="margin-top:6px;">© 2026 Palak Sharma · All rights reserved</p>
     </footer>
 
     <!-- Scroll to top -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+    <button id="scrollTopBtn" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Back to top">↑</button>
 
     <!-- ======================================================
          EVENT DETAIL MODAL
          ====================================================== -->
-    <div id="eventModal" class="modal" style="display: none;">
+    <div id="eventModal" class="modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <button type="button" class="close" id="eventModalClose" aria-label="Close">&times;</button>
             <div id="modalBody"></div>
         </div>
     </div>
@@ -146,9 +164,9 @@
     <!-- ======================================================
          ADD / EDIT EVENT MODAL (admin)
          ====================================================== -->
-    <div id="addEventModal" class="modal" style="display: none;">
+    <div id="addEventModal" class="modal" style="display: none;" role="dialog" aria-modal="true">
         <div class="modal-content">
-            <span class="close" onclick="closeAddEventModal()">&times;</span>
+            <button type="button" class="close" onclick="closeAddEventModal()" aria-label="Close">&times;</button>
             <h2 class="modal-title" id="eventFormTitle">Add New Event</h2>
             <form id="eventForm">
                 <input type="hidden" id="eventId">
@@ -214,7 +232,7 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=4"></script>
+    <script src="/static/app.js?v=8"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')

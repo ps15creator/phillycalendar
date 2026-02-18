@@ -15,14 +15,31 @@ const ADMIN_SESSION_KEY = 'philly_admin_token';
 function getAdminToken() { return sessionStorage.getItem(ADMIN_SESSION_KEY) || ''; }
 function isAdminMode() { return !!getAdminToken(); }
 
+// Hero dismiss (sessionStorage — persists until tab closes)
+const HERO_DISMISS_KEY = 'philly_hero_dismissed';
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
+    initHeroDismiss();
     loadEvents();
     loadBookmarks();
     renderAdminControls();
     checkForUpdates();
 });
+
+function initHeroDismiss() {
+    const hero = document.getElementById('heroBanner');
+    const closeBtn = document.getElementById('heroCloseBtn');
+    if (!hero || !closeBtn) return;
+    if (sessionStorage.getItem(HERO_DISMISS_KEY)) {
+        hero.style.display = 'none';
+    }
+    closeBtn.addEventListener('click', () => {
+        sessionStorage.setItem(HERO_DISMISS_KEY, '1');
+        hero.style.display = 'none';
+    });
+}
 
 // (No resize re-render needed — unified day-grouped view works at all sizes)
 
@@ -68,6 +85,20 @@ function setupEventListeners() {
 
     document.getElementById('eventForm').addEventListener('submit', handleEventFormSubmit);
 
+    // Event modal close (first .close is in event modal)
+    const eventModalCloseBtn = document.getElementById('eventModalClose');
+    if (eventModalCloseBtn) eventModalCloseBtn.addEventListener('click', closeModal);
+
+    // Escape to close modals
+    window.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('addEventModal').style.display === 'block') {
+            closeAddEventModal();
+        } else if (document.getElementById('eventModal').style.display === 'block') {
+            closeModal();
+        }
+    });
+
     // Scroll-to-top button visibility
     const scrollBtn = document.getElementById('scrollTopBtn');
     window.addEventListener('scroll', () => {
@@ -78,9 +109,6 @@ function setupEventListeners() {
         }
     });
 
-    // Modal close
-    document.querySelector('.close').addEventListener('click', closeModal);
-
     window.addEventListener('click', (e) => {
         if (e.target.id === 'eventModal') closeModal();
     });
@@ -88,6 +116,11 @@ function setupEventListeners() {
 
 // Load events from API
 async function loadEvents() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = 'Refreshing…';
+    }
     showLoading(true);
 
     try {
@@ -107,6 +140,10 @@ async function loadEvents() {
         showEmptyState();
     } finally {
         showLoading(false);
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = '🔄 Refresh';
+        }
     }
 }
 
@@ -165,6 +202,20 @@ function handleMonthFilter(e) {
 // Handle source filter
 function handleSourceFilter(e) {
     currentSource = e.target.value;
+    applyFilters();
+}
+
+// Clear all filters and search (used by empty state)
+function clearFilters() {
+    currentCategory = 'all';
+    currentMonth = 'all';
+    currentSource = 'all';
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === 'all');
+    });
+    document.getElementById('monthSelect').value = 'all';
+    document.getElementById('sourceSelect').value = 'all';
+    document.getElementById('searchInput').value = '';
     applyFilters();
 }
 
@@ -279,10 +330,26 @@ function handleSearch(e) {
 function renderEvents() {
     const container = document.getElementById('eventsContainer');
     const emptyState = document.getElementById('emptyState');
+    const emptyIcon = document.getElementById('emptyIcon');
+    const emptyTitle = document.getElementById('emptyTitle');
+    const emptyDesc = document.getElementById('emptyDesc');
+    const emptyActions = document.getElementById('emptyActions');
 
     if (filteredEvents.length === 0) {
         container.innerHTML = '';
         emptyState.style.display = 'block';
+        const hasFilters = allEvents.length > 0;
+        if (hasFilters) {
+            emptyIcon.textContent = '🔍';
+            emptyTitle.textContent = 'No events match your filters';
+            emptyDesc.textContent = 'Try a different category, month, or search.';
+            emptyActions.innerHTML = '<button type="button" class="btn btn-ghost" onclick="clearFilters()">Clear all filters</button>';
+        } else {
+            emptyIcon.textContent = '🔔';
+            emptyTitle.textContent = 'No events found';
+            emptyDesc.textContent = 'Try adjusting your filters or check back soon!';
+            emptyActions.innerHTML = '';
+        }
         return;
     }
 
@@ -390,7 +457,7 @@ function showEventDetail(event) {
     const safeUrl = event.source_url ? escapeHtml(event.source_url) : '';
 
     modalBody.innerHTML = `
-        <h2 class="modal-title">${escapeHtml(event.title)}</h2>
+        <h2 class="modal-title" id="eventModalTitle">${escapeHtml(event.title)}</h2>
 
         <div class="modal-detail">
             <strong>📅 Date & Time</strong><br>
