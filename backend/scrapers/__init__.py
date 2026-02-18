@@ -23,10 +23,12 @@ from .pcmsconcerts_scraper import PCMSConcertsScraper
 from .runsignup_scraper import RunSignUpScraper
 from .phillyrunner_scraper import PhillyRunnerScraper
 from .filmadelphia_scraper import FilmadelphiaScraper
+from .active_scraper import ActiveScraper
+from .loverun_scraper import PhillyMajorRacesScraper
 
 # Active scrapers fetching real events from live websites
 SCRAPERS = [
-    EventbriteScraper,          # Eventbrite Philadelphia (6 categories, PA-only)
+    EventbriteScraper,          # Eventbrite Philadelphia (6 categories, 5 pages each)
     Do215Scraper,               # Do215 Philadelphia events guide (30-day calendar)
     MilkBoyScraper,             # MilkBoy Philadelphia music venue (JSON-LD)
     JohnnyBrendasScraper,       # Johnny Brenda's Fishtown music venue (HTML)
@@ -40,8 +42,10 @@ SCRAPERS = [
     PhilaMuseumScraper,         # Philadelphia Museum of Art Sanity API (102+ events)
     MuralArtsScraper,           # Mural Arts Philadelphia (window.events JS variable)
     PCMSConcertsScraper,        # Philadelphia Chamber Music Society (HTML + JSON-LD)
-    RunSignUpScraper,           # Philadelphia running races via RunSignUp API
+    RunSignUpScraper,           # Philadelphia running races via RunSignUp API (Philly metro)
     PhillyRunnerScraper,        # Philadelphia Runner-sponsored races (RunSignUp)
+    ActiveScraper,              # Active.com Philadelphia running events
+    PhillyMajorRacesScraper,    # Love Run, Broad Street Run, Philly Marathon, Philly 10K
     FilmadelphiaScraper,        # Philadelphia Film Society via Eventbrite
     VisitPhillyScraper,         # Visit Philadelphia official tourism events
 ]
@@ -54,5 +58,6 @@ __all__ = [
     'SouthStreetScraper', 'PhillyMagicGardensScraper', 'OldCityScraper',
     'OurPhillyScraper', 'PhilaMuseumScraper',
     'PCMSConcertsScraper', 'RunSignUpScraper', 'PhillyRunnerScraper',
+    'ActiveScraper', 'PhillyMajorRacesScraper',
     'FilmadelphiaScraper', 'SCRAPERS'
 ]

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philly Events — Your City, Your Calendar</title>
-    <link rel="stylesheet" href="/static/styles.css?v=3">
+    <link rel="stylesheet" href="/static/styles.css?v=4">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
@@ -49,20 +49,8 @@
     </section>
 
     <!-- ======================================================
-         MAIN CONTENT + SIDE ICON COLUMNS
+         MAIN CONTENT
          ====================================================== -->
-    <div class="page-outer">
-
-        <!-- Left scrolling icons -->
-        <aside class="icon-rail icon-rail-left" aria-hidden="true">
-            <div class="icon-track">
-                <span>🦅</span><span>⚾</span><span>🏀</span><span>🏒</span>
-                <span>🔔</span><span>🏛️</span><span>🛒</span><span>🥩</span>
-                <span>🦅</span><span>⚾</span><span>🏀</span><span>🏒</span>
-                <span>🔔</span><span>🏛️</span><span>🛒</span><span>🥩</span>
-            </div>
-        </aside>
-
         <main class="page-wrapper">
 
         <!-- Stats Bar -->
@@ -131,18 +119,6 @@
         </div>
 
         </main>
-
-        <!-- Right scrolling icons (goes up, opposite direction) -->
-        <aside class="icon-rail icon-rail-right" aria-hidden="true">
-            <div class="icon-track icon-track-reverse">
-                <span>🥩</span><span>🛒</span><span>🏛️</span><span>🔔</span>
-                <span>🏒</span><span>🏀</span><span>⚾</span><span>🦅</span>
-                <span>🥩</span><span>🛒</span><span>🏛️</span><span>🔔</span>
-                <span>🏒</span><span>🏀</span><span>⚾</span><span>🦅</span>
-            </div>
-        </aside>
-
-    </div><!-- /page-outer -->
 
     <!-- ======================================================
          FOOTER
@@ -238,7 +214,7 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=3"></script>
+    <script src="/static/app.js?v=4"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')

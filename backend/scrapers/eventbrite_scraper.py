@@ -52,14 +52,17 @@ class EventbriteScraper(BaseScraper):
             'Accept-Language': 'en-US,en;q=0.5',
         }
 
+    # Number of listing pages to fetch per category (each page ~20 events)
+    PAGES_PER_CATEGORY = 5
+
     def scrape(self) -> List[Dict]:
         """Fetch real Philadelphia events from Eventbrite across all categories"""
         all_events = []
         seen_urls = set()
 
-        for category, url in self.CATEGORY_URLS.items():
+        for category, base_url in self.CATEGORY_URLS.items():
             try:
-                events = self._scrape_category_page(url, category, seen_urls)
+                events = self._scrape_category_all_pages(base_url, category, seen_urls)
                 all_events.extend(events)
                 logger.info(f"Eventbrite {category}: {len(events)} events fetched")
             except Exception as e:
@@ -68,12 +71,33 @@ class EventbriteScraper(BaseScraper):
         logger.info(f"Eventbrite total: {len(all_events)} real events")
         return all_events
 
+    def _scrape_category_all_pages(self, base_url: str, default_category: str, seen_urls: set) -> List[Dict]:
+        """Scrape multiple pages of an Eventbrite category listing"""
+        all_events = []
+        import time
+
+        for page_num in range(1, self.PAGES_PER_CATEGORY + 1):
+            url = base_url if page_num == 1 else f"{base_url}?page={page_num}"
+            try:
+                events = self._scrape_category_page(url, default_category, seen_urls)
+                all_events.extend(events)
+                if not events:
+                    # No events on this page — stop paginating early
+                    break
+                if page_num < self.PAGES_PER_CATEGORY:
+                    time.sleep(0.5)  # Be polite between pages
+            except Exception as e:
+                logger.error(f"Error scraping Eventbrite page {page_num} for {default_category}: {e}")
+                break
+
+        return all_events
+
     def _scrape_category_page(self, url: str, default_category: str, seen_urls: set) -> List[Dict]:
         """Scrape a single Eventbrite category page via JSON-LD"""
         events = []
 
         try:
-            response = requests.get(url, headers=self.headers, timeout=12)
+            response = requests.get(url, headers=self.headers, timeout=15)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
 

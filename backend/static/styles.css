@@ -177,76 +177,11 @@ body {
 }
 
 /* ============================================================
-   PAGE OUTER — 3-col layout: rail | content | rail
-   ============================================================ */
-.page-outer {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    position: relative;
-}
-
-/* ============================================================
-   ICON RAILS — scrolling Philly icons on left/right
-   ============================================================ */
-.icon-rail {
-    width: 72px;
-    flex-shrink: 0;
-    background: var(--green);
-    overflow: hidden;
-    /* stick to viewport height as user scrolls */
-    position: sticky;
-    top: 70px; /* below sticky header */
-    height: calc(100vh - 70px);
-    display: flex;
-    flex-direction: column;
-}
-
-.icon-rail-left  { border-right: 3px solid var(--red); }
-.icon-rail-right { border-left:  3px solid var(--gold); }
-
-.icon-track {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-    animation: scrollDown 18s linear infinite;
-}
-
-.icon-track-reverse {
-    animation: scrollUp 22s linear infinite;
-}
-
-.icon-track span {
-    font-size: 2.1em;
-    padding: 16px 0;
-    line-height: 1;
-    opacity: 0.85;
-    transition: opacity 0.2s, transform 0.2s;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
-}
-
-.icon-track span:hover {
-    opacity: 1;
-    transform: scale(1.15);
-}
-
-@keyframes scrollDown {
-    0%   { transform: translateY(0); }
-    100% { transform: translateY(-50%); }
-}
-
-@keyframes scrollUp {
-    0%   { transform: translateY(-50%); }
-    100% { transform: translateY(0); }
-}
-
-/* ============================================================
    MAIN LAYOUT
    ============================================================ */
 .page-wrapper {
-    flex: 1;
-    min-width: 0;
+    max-width: 1100px;
+    margin: 0 auto;
     padding: 24px 20px 60px;
 }
 
@@ -973,14 +908,7 @@ body {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 900px) {
-    .icon-rail { width: 52px; }
-    .icon-track span { font-size: 1.7em; padding: 12px 0; }
-}
-
 @media (max-width: 700px) {
-    .icon-rail { display: none; }
-
     .header-inner { padding: 14px 16px 12px; }
     .header-brand h1 { font-size: 1.35em; }
 

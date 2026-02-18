@@ -43,46 +43,50 @@ class RunSignUpScraper(BaseScraper):
             'Accept': 'application/json',
         }
 
+    # Search targets: city + state combos covering Philly metro area
+    SEARCH_TARGETS = [
+        {'city': 'Philadelphia', 'state': 'PA'},
+        {'city': 'Fairmount Park', 'state': 'PA'},
+        {'city': 'Manayunk',      'state': 'PA'},
+        {'city': 'Conshohocken',  'state': 'PA'},
+        {'city': 'King of Prussia','state': 'PA'},
+    ]
+
     def scrape(self) -> List[Dict]:
         events = []
         seen = set()
 
-        # Query the RunSignUp API for Philadelphia races
         today = datetime.now()
         start_date = today.strftime('%Y-%m-%d')
-        # Look up to 18 months ahead
         from datetime import timedelta
         end_date = (today + timedelta(days=548)).strftime('%Y-%m-%d')
 
-        params = {
-            'city': 'Philadelphia',
-            'state': 'PA',
-            'events': 'T',           # include sub-event details
-            'format': 'json',
-            'start_date': start_date,
-            'end_date': end_date,
-            'results_per_page': 50,
-            'page': 1,
-        }
-
-        try:
-            response = requests.get(
-                RUNSIGNUP_API,
-                headers=self.headers,
-                params=params,
-                timeout=15
-            )
-            response.raise_for_status()
-            data = response.json()
-            races = data.get('races', [])
-
-            for race_wrapper in races:
-                race = race_wrapper.get('race', {})
-                parsed = self._parse_race(race, seen)
-                events.extend(parsed)
-
-        except Exception as e:
-            logger.error(f"Error scraping RunSignUp Philadelphia races: {e}")
+        for target in self.SEARCH_TARGETS:
+            try:
+                params = {
+                    **target,
+                    'events': 'T',
+                    'format': 'json',
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'results_per_page': 100,
+                    'page': 1,
+                }
+                response = requests.get(
+                    RUNSIGNUP_API,
+                    headers=self.headers,
+                    params=params,
+                    timeout=15
+                )
+                response.raise_for_status()
+                data = response.json()
+                races = data.get('races', [])
+                for race_wrapper in races:
+                    race = race_wrapper.get('race', {})
+                    parsed = self._parse_race(race, seen)
+                    events.extend(parsed)
+            except Exception as e:
+                logger.error(f"Error scraping RunSignUp {target}: {e}")
 
         logger.info(f"Philadelphia Running Races (RunSignUp): {len(events)} events")
         return events
