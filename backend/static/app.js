@@ -68,6 +68,16 @@ function setupEventListeners() {
 
     document.getElementById('eventForm').addEventListener('submit', handleEventFormSubmit);
 
+    // Scroll-to-top button visibility
+    const scrollBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            scrollBtn.classList.add('visible');
+        } else {
+            scrollBtn.classList.remove('visible');
+        }
+    });
+
     // Modal close
     document.querySelector('.close').addEventListener('click', closeModal);
 
@@ -350,7 +360,7 @@ function createEventRow(event, index) {
         <div class="event-time-col">
             ${hasTime
                 ? `<span class="event-time">${escapeHtml(timeStr)}</span>`
-                : `<span class="event-time-tbd">—</span>`}
+                : `<span class="event-time-tbd">Time TBD</span>`}
         </div>
         <div class="event-row-divider"></div>
         <div class="event-details-col">

@@ -457,11 +457,12 @@ header h1 {
 }
 
 .event-time-tbd {
-    font-size: 1em;
-    color: #ccc;
-    font-style: normal;
+    font-size: 0.7em;
+    color: #aaa;
+    font-style: italic;
     font-weight: 400;
     letter-spacing: 0;
+    white-space: nowrap;
 }
 
 .event-row-divider {
@@ -724,6 +725,40 @@ footer a {
 }
 
 footer a:hover { text-decoration: underline; }
+
+/* ============================================================
+   SCROLL TO TOP BUTTON
+   ============================================================ */
+#scrollTopBtn {
+    position: fixed;
+    bottom: 28px;
+    right: 24px;
+    z-index: 999;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--philly-green);
+    color: white;
+    border: none;
+    font-size: 1.3em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,76,84,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.2s;
+    line-height: 1;
+}
+
+#scrollTopBtn.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#scrollTopBtn:hover {
+    background: var(--philly-navy);
+    transform: translateY(-2px);
+}
 
 /* ============================================================
    RESPONSIVE — Mobile
