@@ -58,14 +58,34 @@ class ReadingTerminalScraper(BaseScraper):
         logger.info(f"Reading Terminal Market: {len(events)} events")
         return events
 
+    # Titles that are NOT real events — RTM misuses the events plugin for these pages
+    SKIP_TITLES = {
+        'gift cards', 'gift card', 'become an ambassador', 'ambassador',
+        'vendor application', 'vendor app', 'newsletter', 'subscribe',
+        'contact us', 'about', 'parking', 'directions', 'hours',
+    }
+
+    # Skip events more than ~18 months in the future — these are usually permanent pages
+    MAX_MONTHS_AHEAD = 18
+
     def _parse_event(self, item: Dict) -> Optional[Dict]:
         try:
             title = item.get('name', '').strip()
             if not title:
                 return None
 
+            # Skip known non-event promotional pages
+            if title.lower() in self.SKIP_TITLES:
+                return None
+
             start_date = self._parse_date(item.get('startDate', ''))
             if not start_date or start_date < datetime.now():
+                return None
+
+            # Skip events suspiciously far in the future (permanent promo pages)
+            from datetime import timedelta
+            max_future = datetime.now() + timedelta(days=self.MAX_MONTHS_AHEAD * 30)
+            if start_date > max_future:
                 return None
 
             end_date = self._parse_date(item.get('endDate', ''))

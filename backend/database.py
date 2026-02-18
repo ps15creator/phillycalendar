@@ -375,25 +375,30 @@ class EventDatabase:
         return events
 
     def get_upcoming_events(self, limit: Optional[int] = None) -> List[Dict]:
-        """Get upcoming events (from now onwards)"""
+        """Get upcoming events (from now, up to 18 months ahead).
+        The 18-month cap prevents bogus far-future placeholder events
+        (e.g. gift card pages, ambassador signup pages) from appearing.
+        """
+        from datetime import timedelta
         conn = self.get_connection()
         now = datetime.now().isoformat()
+        max_date = (datetime.now() + timedelta(days=548)).isoformat()  # ~18 months
 
         if self.use_postgres:
             cursor = conn.cursor()
-            query = 'SELECT * FROM events WHERE start_date >= %s ORDER BY start_date ASC'
+            query = 'SELECT * FROM events WHERE start_date >= %s AND start_date <= %s ORDER BY start_date ASC'
             if limit:
                 query += f' LIMIT {limit}'
-            cursor.execute(query, (now,))
+            cursor.execute(query, (now, max_date))
             columns = [desc[0] for desc in cursor.description]
             events = [dict(zip(columns, row)) for row in cursor.fetchall()]
         else:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            query = 'SELECT * FROM events WHERE start_date >= ? ORDER BY start_date ASC'
+            query = 'SELECT * FROM events WHERE start_date >= ? AND start_date <= ? ORDER BY start_date ASC'
             if limit:
                 query += f' LIMIT {limit}'
-            cursor.execute(query, (now,))
+            cursor.execute(query, (now, max_date))
             events = [dict(row) for row in cursor.fetchall()]
 
         self.release_connection(conn)
