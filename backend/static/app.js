@@ -478,10 +478,9 @@ function showEmptyState() {
     document.getElementById('emptyState').style.display = 'block';
 }
 
-// Show notification
+// Show notification (uses toast system)
 function showNotification(message, type = 'success') {
-    // Simple alert for now - could be enhanced with toast notifications
-    alert(message);
+    showToast(message, type);
 }
 
 // Parse a date string from the server as LOCAL time (not UTC)
