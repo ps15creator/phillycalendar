@@ -479,7 +479,7 @@ function checkForUpdates() {
 
 // Show/hide loading
 function showLoading(show) {
-    document.getElementById('loading').style.display = show ? 'block' : 'none';
+    document.getElementById('loadingState').style.display = show ? 'block' : 'none';
 }
 
 // Show empty state
@@ -840,7 +840,7 @@ function renderAdminControls() {
         addBtn.className = 'btn btn-success';
         addBtn.textContent = '+ Add Event';
         addBtn.onclick = openAddEventModal;
-        document.querySelector('.actions').appendChild(addBtn);
+        document.querySelector('.action-btns').appendChild(addBtn);
     } else if (!isAdminMode() && addBtn) {
         addBtn.remove();
     }

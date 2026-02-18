@@ -8,78 +8,93 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <h1>🔔 Philly Events Calendar</h1>
-            <p class="subtitle">🦅 Your city. Your events. Never miss a thing. 🔔</p>
-        </header>
 
-        <!-- About Banner -->
-        <div class="about-banner" id="aboutBanner">
-            <span class="about-close" onclick="document.getElementById('aboutBanner').style.display='none'">×</span>
-            <h2>🔔 Welcome to Philly Events!</h2>
-            <p>
-                From the steps of the <strong>Philadelphia Museum of Art</strong> to the floors of the
-                <strong>Wells Fargo Center</strong> — this calendar pulls together events from across
-                the city so you never miss what's happening in Philly.
-                Music 🎵 · Arts 🎨 · Food 🍽️ · Running 🏃 · Community 👥 and more.
-                Auto-updated every 4 hours from local venues & event sites.
-            </p>
-        </div>
-
-        <!-- Philly Landmarks Strip -->
-        <div class="philly-strip">
-            <span title="Liberty Bell">🔔</span>
-            <span title="Philadelphia Eagles">🦅</span>
-            <span title="Philadelphia Museum of Art">🏛️</span>
-            <span title="Philadelphia Phillies">⚾</span>
-            <span title="Philadelphia 76ers">🏀</span>
-            <span title="Reading Terminal Market">🛒</span>
-            <span title="Philadelphia Flyers">🏒</span>
-            <span title="Love Park">❤️</span>
-            <span title="Philly Cheesesteak">🥩</span>
-            <span title="Philadelphia">🏙️</span>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search events...">
+    <!-- ======================================================
+         STICKY HEADER
+         ====================================================== -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="header-brand">
+                <h1>🔔 Philly <span class="red">Events</span> <span class="gold">Calendar</span></h1>
+                <p class="header-tagline">🦅 Your city. Your events. Never miss a thing.</p>
             </div>
-
-            <div class="filters">
-                <button class="filter-btn active" data-category="all">All Events</button>
-                <button class="filter-btn" data-category="running">🏃 Running</button>
-                <button class="filter-btn" data-category="artsAndCulture">🎨 Arts</button>
-                <button class="filter-btn" data-category="music">🎵 Music</button>
-                <button class="filter-btn" data-category="foodAndDrink">🍽️ Food</button>
-                <button class="filter-btn" data-category="community">👥 Community</button>
-            </div>
-
-            <div class="month-filter">
-                <label for="monthSelect">📅 Filter by Month:</label>
-                <select id="monthSelect" class="month-select">
-                    <option value="all">All Months</option>
-                </select>
-            </div>
-
-            <div class="source-filter">
-                <label for="sourceSelect">🔗 Filter by Source:</label>
-                <select id="sourceSelect" class="source-select">
-                    <option value="all">All Sources</option>
-                </select>
-            </div>
-
-            <div class="actions">
-                <button id="bookmarksBtn" class="btn btn-primary">⭐ My Bookmarks</button>
-                <button id="refreshBtn" class="btn btn-primary">🔄 Refresh Events</button>
+            <nav class="header-nav">
+                <button id="bookmarksBtn" class="btn btn-secondary">⭐ Bookmarks</button>
+                <button id="refreshBtn" class="btn btn-primary">🔄 Refresh</button>
                 <button id="adminBtn" class="btn btn-secondary" onclick="handleAdminBtn()">🔑 Admin</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ======================================================
+         HERO BANNER
+         ====================================================== -->
+    <section class="hero-banner" id="heroBanner">
+        <span class="hero-close" onclick="document.getElementById('heroBanner').style.display='none'" title="Dismiss">×</span>
+        <div class="hero-content">
+            <h2>Your <span class="accent-gold">Philadelphia</span><br>Event <span class="accent-red">Hub</span></h2>
+            <p>
+                From the steps of the <strong>Philadelphia Museum of Art</strong> to the
+                floor of <strong>Wells Fargo Center</strong> — every concert, race, festival,
+                and neighborhood event in one place. Auto-updated every 4 hours.
+            </p>
+            <div class="hero-cats">
+                <span class="hero-cat" onclick="handleFilter('running')">🏃 Running</span>
+                <span class="hero-cat" onclick="handleFilter('music')">🎵 Music</span>
+                <span class="hero-cat" onclick="handleFilter('artsAndCulture')">🎨 Arts</span>
+                <span class="hero-cat" onclick="handleFilter('foodAndDrink')">🍽️ Food &amp; Drink</span>
+                <span class="hero-cat" onclick="handleFilter('community')">👥 Community</span>
             </div>
         </div>
+    </section>
 
-        <!-- Stats -->
-        <div class="stats">
+    <!-- ======================================================
+         PHILLY TEAMS STRIP
+         ====================================================== -->
+    <div class="teams-strip">
+        <div class="teams-inner">
+            <div class="team-pill">
+                <span class="team-emoji">🦅</span>
+                <span class="team-name">Eagles</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">⚾</span>
+                <span class="team-name">Phillies</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🏀</span>
+                <span class="team-name">76ers</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🏒</span>
+                <span class="team-name">Flyers</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🔔</span>
+                <span class="team-name">Liberty Bell</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🏛️</span>
+                <span class="team-name">PMA</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🛒</span>
+                <span class="team-name">Reading Terminal</span>
+            </div>
+            <div class="team-pill">
+                <span class="team-emoji">🥩</span>
+                <span class="team-name">Cheesesteak</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================
+         MAIN CONTENT
+         ====================================================== -->
+    <main class="page-wrapper">
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
             <div class="stat-card">
                 <span class="stat-number" id="totalEvents">0</span>
                 <span class="stat-label">Total Events</span>
@@ -89,46 +104,88 @@
                 <span class="stat-label">Upcoming</span>
             </div>
             <div class="stat-card">
-                <span class="stat-number" id="lastSync">Never</span>
+                <span class="stat-number" id="lastSync">—</span>
                 <span class="stat-label">Last Updated</span>
             </div>
         </div>
 
-        <!-- Loading -->
-        <div id="loading" class="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Loading events...</p>
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search events, venues, artists...">
+            </div>
+
+            <div class="filter-row">
+                <button class="filter-btn active" data-category="all">All Events</button>
+                <button class="filter-btn" data-category="running">🏃 Running</button>
+                <button class="filter-btn" data-category="music">🎵 Music</button>
+                <button class="filter-btn" data-category="artsAndCulture">🎨 Arts</button>
+                <button class="filter-btn" data-category="foodAndDrink">🍽️ Food</button>
+                <button class="filter-btn" data-category="community">👥 Community</button>
+            </div>
+
+            <div class="controls-bottom">
+                <div class="select-wrap">
+                    <label for="monthSelect">📅 Month</label>
+                    <select id="monthSelect" class="month-select">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+                <div class="select-wrap">
+                    <label for="sourceSelect">📡 Source</label>
+                    <select id="sourceSelect" class="source-select">
+                        <option value="all">All Sources</option>
+                    </select>
+                </div>
+                <div class="action-btns">
+                </div>
+            </div>
         </div>
 
-        <!-- Events List -->
-        <div id="eventsContainer" class="events-container">
-            <!-- Events will be dynamically loaded here -->
+        <!-- Loading State -->
+        <div id="loadingState" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p style="color:#666;">Loading Philly events…</p>
         </div>
+
+        <!-- Events Container -->
+        <div id="eventsContainer" class="events-container"></div>
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <p>📅 No upcoming events found. Try adjusting your filters or check back soon!</p>
+            <p style="font-size:2.5em; margin-bottom:12px;">🔔</p>
+            <p style="font-weight:700; font-size:1.1em; color:#333; margin-bottom:8px;">No events found</p>
+            <p>Try adjusting your filters or check back soon!</p>
         </div>
 
-        <!-- Footer -->
-        <footer>
-            <p>🔔 Made with ❤️ for Philadelphia · E-A-G-L-E-S 🦅 · <a href="https://phillycalendar.onrender.com" target="_blank">phillycalendar.onrender.com</a></p>
-            <p style="margin-top:4px; font-size:0.8em;">Events refreshed every 4 hours · Data sourced from local Philly venues & sites</p>
-            <p style="margin-top:6px; font-size:0.75em; opacity:0.7;">© 2026 Palak Sharma · All rights reserved</p>
-        </footer>
-    </div>
+    </main>
 
-    <!-- Event Detail Modal -->
+    <!-- ======================================================
+         FOOTER
+         ====================================================== -->
+    <footer class="site-footer">
+        <p class="footer-brand">🔔 Philly Events Calendar &nbsp;·&nbsp; E-A-G-L-E-S 🦅</p>
+        <p><a href="https://phillycalendar.onrender.com" target="_blank">phillycalendar.onrender.com</a></p>
+        <p class="footer-sub">Events refreshed every 4 hours · Data sourced from local Philly venues &amp; sites</p>
+        <p class="footer-sub" style="margin-top:6px;">© 2026 Palak Sharma · All rights reserved</p>
+    </footer>
+
+    <!-- Scroll to top -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+    <!-- ======================================================
+         EVENT DETAIL MODAL
+         ====================================================== -->
     <div id="eventModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <div id="modalBody">
-                <!-- Event details will be loaded here -->
-            </div>
+            <div id="modalBody"></div>
         </div>
     </div>
 
-    <!-- Add / Edit Event Modal (admin only) -->
+    <!-- ======================================================
+         ADD / EDIT EVENT MODAL (admin)
+         ====================================================== -->
     <div id="addEventModal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="close" onclick="closeAddEventModal()">&times;</span>
@@ -137,42 +194,42 @@
                 <input type="hidden" id="eventId">
                 <div class="form-group">
                     <label for="eventTitle">Title *</label>
-                    <input type="text" id="eventTitle" required>
+                    <input type="text" id="eventTitle" required placeholder="Event name">
                 </div>
                 <div class="form-group">
                     <label for="eventDescription">Description</label>
-                    <textarea id="eventDescription" rows="3"></textarea>
+                    <textarea id="eventDescription" rows="3" placeholder="What's happening?"></textarea>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="eventStartDate">Start Date & Time *</label>
+                        <label for="eventStartDate">Start Date &amp; Time *</label>
                         <input type="datetime-local" id="eventStartDate" required>
                     </div>
                     <div class="form-group">
-                        <label for="eventEndDate">End Date & Time</label>
+                        <label for="eventEndDate">End Date &amp; Time</label>
                         <input type="datetime-local" id="eventEndDate">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="eventLocation">Location *</label>
-                    <input type="text" id="eventLocation" required>
+                    <input type="text" id="eventLocation" required placeholder="Venue, address">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="eventCategory">Category *</label>
                         <select id="eventCategory" required>
-                            <option value="">Select...</option>
+                            <option value="">Select…</option>
                             <option value="running">Running</option>
-                            <option value="artsAndCulture">Arts & Culture</option>
+                            <option value="artsAndCulture">Arts &amp; Culture</option>
                             <option value="music">Music</option>
-                            <option value="foodAndDrink">Food & Drink</option>
+                            <option value="foodAndDrink">Food &amp; Drink</option>
                             <option value="community">Community</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="eventPrice">Price</label>
-                        <input type="text" id="eventPrice" placeholder="e.g. Free, $25">
+                        <input type="text" id="eventPrice" placeholder="Free, $25, etc.">
                     </div>
                 </div>
                 <div class="form-row">
@@ -182,7 +239,7 @@
                     </div>
                     <div class="form-group">
                         <label for="eventSourceUrl">Source URL</label>
-                        <input type="url" id="eventSourceUrl" placeholder="https://...">
+                        <input type="url" id="eventSourceUrl" placeholder="https://…">
                     </div>
                 </div>
                 <div class="form-group">
@@ -190,26 +247,20 @@
                     <input type="datetime-local" id="eventRegDeadline">
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Event</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Event</button>
                     <button type="button" class="btn btn-danger" onclick="closeAddEventModal()">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Scroll to top button -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
-
     <script src="/static/app.js"></script>
     <script>
-        // Register service worker for offline support
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
-                .then(reg => console.log('✅ Offline access enabled!'))
-                .catch(err => console.log('Service Worker registration failed'));
+                .then(() => console.log('✅ Offline access enabled!'))
+                .catch(() => {});
         }
-
-        // Request notification permission
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
