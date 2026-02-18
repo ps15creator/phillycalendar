@@ -12,6 +12,7 @@ from datetime import datetime
 from functools import wraps
 import os
 import threading
+import requests as _requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -61,6 +62,62 @@ if use_cloud:
     logger.info("Using cloud PostgreSQL database")
 else:
     logger.info("Using local SQLite database (set DATABASE_URL to use cloud)")
+
+
+def _start_scheduler():
+    """Start APScheduler for 4-hour auto-scraping and keep-alive pings."""
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.triggers.interval import IntervalTrigger
+    from apscheduler.triggers.cron import CronTrigger
+
+    scheduler = BackgroundScheduler(daemon=True)
+
+    # Auto-scrape every 4 hours
+    scheduler.add_job(
+        func=run_scrape_job,
+        trigger=IntervalTrigger(hours=4),
+        id='auto_scrape',
+        name='Auto-scrape Philadelphia Events',
+        replace_existing=True
+    )
+
+    # Cleanup old events daily at 3 AM
+    scheduler.add_job(
+        func=lambda: db.delete_old_events(days_old=30),
+        trigger=CronTrigger(hour=3, minute=0),
+        id='cleanup_old_events',
+        name='Cleanup Old Events',
+        replace_existing=True
+    )
+
+    # Keep-alive ping every 14 minutes to prevent Render free-tier spin-down
+    _self_url = os.environ.get('RENDER_EXTERNAL_URL', '')
+    if _self_url:
+        def _ping():
+            try:
+                _requests.get(f'{_self_url}/health', timeout=10)
+                logger.debug('Keep-alive ping sent.')
+            except Exception as e:
+                logger.warning(f'Keep-alive ping failed: {e}')
+
+        scheduler.add_job(
+            func=_ping,
+            trigger=IntervalTrigger(minutes=14),
+            id='keep_alive',
+            name='Keep-Alive Ping',
+            replace_existing=True
+        )
+        logger.info(f'Keep-alive pings enabled → {_self_url}/health every 14 min')
+    else:
+        logger.info('RENDER_EXTERNAL_URL not set — keep-alive pings disabled (local dev)')
+
+    scheduler.start()
+    logger.info('Scheduler started: auto-scrape every 4 h, cleanup daily at 3 AM')
+
+
+# Start scheduler only in the main process (not in gunicorn worker reloads)
+if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+    _start_scheduler()
 
 
 @app.route('/')
