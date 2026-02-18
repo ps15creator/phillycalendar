@@ -6,23 +6,58 @@ let filteredEvents = [];
 let currentCategory = 'all';
 let currentMonth = 'all';
 let currentSource = 'all';
-let bookmarkedIds = new Set(); // Track bookmarked event IDs
+let bookmarkedIds = new Set(); // Track bookmarked event IDs (stored in localStorage)
+
+// ============================================================
+// ADMIN AUTH (sessionStorage — clears when tab closes)
+// ============================================================
+const ADMIN_SESSION_KEY = 'philly_admin_token';
+function getAdminToken() { return sessionStorage.getItem(ADMIN_SESSION_KEY) || ''; }
+function isAdminMode() { return !!getAdminToken(); }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     loadEvents();
     loadBookmarks();
+    renderAdminControls();
     checkForUpdates();
 });
 
 // (No resize re-render needed — unified day-grouped view works at all sizes)
 
+// Escape HTML to prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Strip HTML tags from a string (for descriptions that contain raw HTML)
+function stripHtml(str) {
+    if (!str) return '';
+    // Remove all HTML tags
+    const stripped = String(str).replace(/<[^>]*>/g, ' ');
+    // Decode common HTML entities
+    const decoded = stripped
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+    // Collapse multiple spaces
+    return decoded.replace(/\s+/g, ' ').trim();
+}
+
 // Setup event listeners
 function setupEventListeners() {
     document.getElementById('searchInput').addEventListener('input', handleSearch);
     document.getElementById('refreshBtn').addEventListener('click', refreshEvents);
-    document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
     document.getElementById('bookmarksBtn').addEventListener('click', showBookmarks);
     document.getElementById('monthSelect').addEventListener('change', handleMonthFilter);
     document.getElementById('sourceSelect').addEventListener('change', handleSourceFilter);
@@ -31,15 +66,13 @@ function setupEventListeners() {
         btn.addEventListener('click', (e) => handleFilter(e.target.dataset.category));
     });
 
+    document.getElementById('eventForm').addEventListener('submit', handleEventFormSubmit);
+
     // Modal close
     document.querySelector('.close').addEventListener('click', closeModal);
-    document.getElementById('closeAddEventModal').addEventListener('click', closeAddEventModal);
-    document.getElementById('cancelEventForm').addEventListener('click', closeAddEventModal);
-    document.getElementById('eventForm').addEventListener('submit', handleEventFormSubmit);
 
     window.addEventListener('click', (e) => {
         if (e.target.id === 'eventModal') closeModal();
-        if (e.target.id === 'addEventModal') closeAddEventModal();
     });
 }
 
@@ -316,18 +349,18 @@ function createEventRow(event, index) {
     <div class="event-row" data-event-index="${index}">
         <div class="event-time-col">
             ${hasTime
-                ? `<span class="event-time">${timeStr}</span>`
+                ? `<span class="event-time">${escapeHtml(timeStr)}</span>`
                 : `<span class="event-time-tbd">—</span>`}
         </div>
         <div class="event-row-divider"></div>
         <div class="event-details-col">
             <div class="event-row-top">
-                <span class="event-row-title">${event.title}</span>
+                <span class="event-row-title">${escapeHtml(event.title)}</span>
                 <span class="event-category ${categoryClass}">${categoryName}</span>
             </div>
             <div class="event-row-meta">
-                ${location ? `<span class="event-row-location">📍 ${location}</span>` : ''}
-                ${price ? `<span class="event-row-price">💰 ${price}</span>` : ''}
+                ${location ? `<span class="event-row-location">📍 ${escapeHtml(location)}</span>` : ''}
+                ${price ? `<span class="event-row-price">💰 ${escapeHtml(price)}</span>` : ''}
             </div>
         </div>
         <span class="chevron">›</span>
@@ -343,61 +376,62 @@ function showEventDetail(event) {
 
     const isBookmarked = bookmarkedIds.has(event.id);
 
+    const cleanDescription = stripHtml(event.description || '');
+    const safeUrl = event.source_url ? escapeHtml(event.source_url) : '';
+
     modalBody.innerHTML = `
-        <h2 class="modal-title">${event.title}</h2>
+        <h2 class="modal-title">${escapeHtml(event.title)}</h2>
 
         <div class="modal-detail">
             <strong>📅 Date & Time</strong><br>
-            ${formatDateLong(startDate)}
+            ${escapeHtml(formatDateLong(startDate))}
         </div>
 
         <div class="modal-detail">
             <strong>📍 Location</strong><br>
-            ${event.location}
-            ${event.source_url ? `<br><a href="${event.source_url}" target="_blank">🔗 View Event Website</a>` : ''}
+            ${escapeHtml(event.location)}
+            ${safeUrl ? `<br><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">🔗 View Event Website</a>` : ''}
         </div>
 
         <div class="modal-detail">
             <strong>🎯 Category</strong><br>
-            ${categoryName}
+            ${escapeHtml(categoryName)}
         </div>
 
         ${event.price ? `
         <div class="modal-detail">
             <strong>💰 Price</strong><br>
-            ${event.price}
+            ${escapeHtml(event.price)}
         </div>
         ` : ''}
 
         ${event.registration_deadline ? `
         <div class="modal-detail">
             <strong>⏰ Registration Deadline</strong><br>
-            ${parseLocalDate(event.registration_deadline).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            ${escapeHtml(parseLocalDate(event.registration_deadline).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }))}
         </div>
         ` : ''}
 
-        ${event.description ? `
+        ${cleanDescription ? `
         <div class="modal-detail">
             <strong>📝 Description</strong><br>
-            ${event.description}
+            ${escapeHtml(cleanDescription)}
         </div>
         ` : ''}
 
         <div class="modal-detail">
             <strong>ℹ️ Source</strong><br>
-            ${event.source || 'Unknown'}
+            ${escapeHtml(event.source || 'Unknown')}
         </div>
 
         <div class="event-detail-actions">
             <button class="btn ${isBookmarked ? 'btn-warning' : 'btn-success'}" onclick="toggleBookmark(${event.id})">
                 ${isBookmarked ? '⭐ Bookmarked' : '☆ Bookmark'}
             </button>
-            <button class="btn btn-primary" onclick="openEditEventModal(${event.id})">
-                ✏️ Edit
-            </button>
-            <button class="btn btn-danger" onclick="deleteEvent(${event.id})">
-                🗑️ Delete
-            </button>
+            ${isAdminMode() ? `
+            <button class="btn btn-primary" onclick="openEditEventModal(${event.id})">✏️ Edit</button>
+            <button class="btn btn-danger" onclick="deleteEvent(${event.id})">🗑️ Delete</button>
+            ` : ''}
         </div>
     `;
 
@@ -626,9 +660,18 @@ async function handleEventFormSubmit(e) {
 
         const response = await fetch(url, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Token': getAdminToken()
+            },
             body: JSON.stringify(payload)
         });
+
+        if (response.status === 401 || response.status === 403) {
+            showToast('Invalid admin password. Please log in again.', 'error');
+            adminLogout();
+            return;
+        }
 
         const data = await response.json();
 
@@ -648,7 +691,17 @@ async function deleteEvent(eventId) {
     if (!confirm('Delete this event? This cannot be undone.')) return;
 
     try {
-        const response = await fetch(`${API_BASE}/events/${eventId}`, { method: 'DELETE' });
+        const response = await fetch(`${API_BASE}/events/${eventId}`, {
+            method: 'DELETE',
+            headers: { 'X-Admin-Token': getAdminToken() }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            showToast('Invalid admin password. Please log in again.', 'error');
+            adminLogout();
+            return;
+        }
+
         const data = await response.json();
 
         if (data.success) {
@@ -664,91 +717,123 @@ async function deleteEvent(eventId) {
 }
 
 // ============================================================
-// BOOKMARKS
+// BOOKMARKS (stored in localStorage — private per browser)
 // ============================================================
 
-async function loadBookmarks() {
+function loadBookmarks() {
     try {
-        const response = await fetch(`${API_BASE}/bookmarks`);
-        const data = await response.json();
-        if (data.success) {
-            bookmarkedIds = new Set(data.bookmarks.map(b => b.id));
-        }
+        const raw = localStorage.getItem('philly_bookmarks');
+        const ids = raw ? JSON.parse(raw) : [];
+        bookmarkedIds = new Set(ids);
     } catch (err) {
-        console.error('Could not load bookmarks:', err);
+        console.error('Could not load bookmarks from localStorage:', err);
+        bookmarkedIds = new Set();
     }
 }
 
-async function toggleBookmark(eventId) {
-    const isBookmarked = bookmarkedIds.has(eventId);
-
-    try {
-        if (isBookmarked) {
-            const response = await fetch(`${API_BASE}/bookmarks/${eventId}`, { method: 'DELETE' });
-            const data = await response.json();
-            if (data.success) {
-                bookmarkedIds.delete(eventId);
-                showToast('Bookmark removed.', 'success');
-            }
-        } else {
-            const response = await fetch(`${API_BASE}/bookmarks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event_id: eventId })
-            });
-            const data = await response.json();
-            if (data.success) {
-                bookmarkedIds.add(eventId);
-                showToast('Event bookmarked! You\'ll get reminders.', 'success');
-            }
-        }
-
-        // Refresh modal to update bookmark button state
-        const event = allEvents.find(e => e.id === eventId);
-        if (event) showEventDetail(event);
-
-    } catch (err) {
-        showToast('Failed to update bookmark.', 'error');
-    }
+function saveBookmarks() {
+    localStorage.setItem('philly_bookmarks', JSON.stringify([...bookmarkedIds]));
 }
 
-async function showBookmarks() {
-    try {
-        const response = await fetch(`${API_BASE}/bookmarks`);
-        const data = await response.json();
+function toggleBookmark(eventId) {
+    if (bookmarkedIds.has(eventId)) {
+        bookmarkedIds.delete(eventId);
+        showToast('Bookmark removed.', 'success');
+    } else {
+        bookmarkedIds.add(eventId);
+        showToast('Event bookmarked!', 'success');
+    }
+    saveBookmarks();
+    // Refresh modal to update bookmark button state
+    const event = allEvents.find(e => e.id === eventId);
+    if (event) showEventDetail(event);
+}
 
-        const modal = document.getElementById('eventModal');
-        const modalBody = document.getElementById('modalBody');
+function showBookmarks() {
+    const modal = document.getElementById('eventModal');
+    const modalBody = document.getElementById('modalBody');
 
-        if (!data.success || data.bookmarks.length === 0) {
-            modalBody.innerHTML = `
-                <h2 class="modal-title">⭐ My Bookmarks</h2>
-                <p style="color:#666; margin-top:20px;">No bookmarked events yet.<br>
-                Open any event and tap <strong>Bookmark</strong> to save it here.</p>
-            `;
-            modal.style.display = 'block';
-            return;
-        }
+    const bookmarkedEvents = allEvents.filter(e => bookmarkedIds.has(e.id));
 
-        const bookmarkRows = data.bookmarks.map(event => {
-            const date = parseLocalDate(event.start_date);
-            return `
-                <div class="bookmark-row" onclick="showBookmarkedEvent(${event.id})" style="cursor:pointer">
-                    <div class="bookmark-title">${event.title}</div>
-                    <div class="bookmark-date">📅 ${date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}</div>
-                    <div class="bookmark-loc">📍 ${event.location}</div>
-                </div>
-            `;
-        }).join('');
-
+    if (bookmarkedEvents.length === 0) {
         modalBody.innerHTML = `
-            <h2 class="modal-title">⭐ My Bookmarks (${data.bookmarks.length})</h2>
-            <div class="bookmarks-list">${bookmarkRows}</div>
+            <h2 class="modal-title">⭐ My Bookmarks</h2>
+            <p style="color:#666; margin-top:20px;">No bookmarked events yet.<br>
+            Open any event and tap <strong>Bookmark</strong> to save it here.</p>
         `;
         modal.style.display = 'block';
+        return;
+    }
 
-    } catch (err) {
-        showToast('Failed to load bookmarks.', 'error');
+    const bookmarkRows = bookmarkedEvents.map(event => {
+        const date = parseLocalDate(event.start_date);
+        return `
+            <div class="bookmark-row" onclick="showBookmarkedEvent(${event.id})" style="cursor:pointer">
+                <div class="bookmark-title">${escapeHtml(event.title)}</div>
+                <div class="bookmark-date">📅 ${escapeHtml(date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }))}</div>
+                <div class="bookmark-loc">📍 ${escapeHtml(event.location)}</div>
+            </div>
+        `;
+    }).join('');
+
+    modalBody.innerHTML = `
+        <h2 class="modal-title">⭐ My Bookmarks (${bookmarkedEvents.length})</h2>
+        <div class="bookmarks-list">${bookmarkRows}</div>
+    `;
+    modal.style.display = 'block';
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+
+function adminLogin() {
+    const token = prompt('Enter admin password:');
+    if (!token) return;
+    sessionStorage.setItem(ADMIN_SESSION_KEY, token);
+    renderAdminControls();
+    showToast('Admin mode enabled', 'success');
+}
+
+function adminLogout() {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    renderAdminControls();
+    showToast('Admin mode disabled', 'success');
+}
+
+function handleAdminBtn() {
+    if (isAdminMode()) {
+        if (confirm('Exit admin mode?')) adminLogout();
+    } else {
+        adminLogin();
+    }
+}
+
+function renderAdminControls() {
+    const adminBtn = document.getElementById('adminBtn');
+    if (!adminBtn) return;
+
+    if (isAdminMode()) {
+        adminBtn.textContent = '🔒 Admin On';
+        adminBtn.classList.remove('btn-secondary');
+        adminBtn.classList.add('btn-warning');
+    } else {
+        adminBtn.textContent = '🔑 Admin';
+        adminBtn.classList.remove('btn-warning');
+        adminBtn.classList.add('btn-secondary');
+    }
+
+    // Show/hide the "+ Add Event" button
+    let addBtn = document.getElementById('addEventBtn');
+    if (isAdminMode() && !addBtn) {
+        addBtn = document.createElement('button');
+        addBtn.id = 'addEventBtn';
+        addBtn.className = 'btn btn-success';
+        addBtn.textContent = '+ Add Event';
+        addBtn.onclick = openAddEventModal;
+        document.querySelector('.actions').appendChild(addBtn);
+    } else if (!isAdminMode() && addBtn) {
+        addBtn.remove();
     }
 }
 

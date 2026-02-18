@@ -44,9 +44,9 @@
             </div>
 
             <div class="actions">
-                <button id="addEventBtn" class="btn btn-success">➕ Add Event</button>
                 <button id="bookmarksBtn" class="btn btn-primary">⭐ My Bookmarks</button>
                 <button id="refreshBtn" class="btn btn-primary">🔄 Refresh Events</button>
+                <button id="adminBtn" class="btn btn-secondary" onclick="handleAdminBtn()">🔑 Admin</button>
             </div>
         </div>
 
@@ -79,7 +79,7 @@
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <p>📅 No events yet. Click <strong>➕ Add Event</strong> to add your first event!</p>
+            <p>📅 No upcoming events found. Try adjusting your filters or check back soon!</p>
         </div>
 
         <!-- Footer -->
@@ -98,79 +98,70 @@
         </div>
     </div>
 
-    <!-- Add/Edit Event Modal -->
+    <!-- Add / Edit Event Modal (admin only) -->
     <div id="addEventModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <span class="close" id="closeAddEventModal">&times;</span>
-            <h2 id="eventFormTitle" class="modal-title">Add New Event</h2>
+            <span class="close" onclick="closeAddEventModal()">&times;</span>
+            <h2 class="modal-title" id="eventFormTitle">Add New Event</h2>
             <form id="eventForm">
-                <input type="hidden" id="eventId" name="eventId">
-
+                <input type="hidden" id="eventId">
                 <div class="form-group">
-                    <label for="eventTitle">Event Title *</label>
-                    <input type="text" id="eventTitle" name="title" required>
+                    <label for="eventTitle">Title *</label>
+                    <input type="text" id="eventTitle" required>
                 </div>
-
                 <div class="form-group">
                     <label for="eventDescription">Description</label>
-                    <textarea id="eventDescription" name="description" rows="4"></textarea>
+                    <textarea id="eventDescription" rows="3"></textarea>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="eventStartDate">Start Date & Time *</label>
-                        <input type="datetime-local" id="eventStartDate" name="start_date" required>
+                        <input type="datetime-local" id="eventStartDate" required>
                     </div>
-
                     <div class="form-group">
                         <label for="eventEndDate">End Date & Time</label>
-                        <input type="datetime-local" id="eventEndDate" name="end_date">
+                        <input type="datetime-local" id="eventEndDate">
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label for="eventLocation">Location *</label>
-                    <input type="text" id="eventLocation" name="location" required placeholder="e.g., Love Park, 1234 Market St">
+                    <input type="text" id="eventLocation" required>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="eventCategory">Category *</label>
-                        <select id="eventCategory" name="category" required>
-                            <option value="">Select category...</option>
-                            <option value="running">🏃 Running</option>
-                            <option value="artsAndCulture">🎨 Arts & Culture</option>
-                            <option value="music">🎵 Music</option>
-                            <option value="foodAndDrink">🍽️ Food & Drink</option>
-                            <option value="community">👥 Community</option>
-                            <option value="other">📌 Other</option>
+                        <select id="eventCategory" required>
+                            <option value="">Select...</option>
+                            <option value="running">Running</option>
+                            <option value="artsAndCulture">Arts & Culture</option>
+                            <option value="music">Music</option>
+                            <option value="foodAndDrink">Food & Drink</option>
+                            <option value="community">Community</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="eventPrice">Price</label>
-                        <input type="text" id="eventPrice" name="price" placeholder="e.g., Free, $25, $10-20">
+                        <input type="text" id="eventPrice" placeholder="e.g. Free, $25">
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="eventSource">Source / Organizer</label>
-                    <input type="text" id="eventSource" name="source" placeholder="e.g., @loveparkphilly, Visit Philly">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="eventSource">Source Name</label>
+                        <input type="text" id="eventSource" placeholder="e.g. Eventbrite">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventSourceUrl">Source URL</label>
+                        <input type="url" id="eventSourceUrl" placeholder="https://...">
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="eventSourceUrl">Event Website/Link</label>
-                    <input type="url" id="eventSourceUrl" name="source_url" placeholder="https://...">
-                </div>
-
                 <div class="form-group">
                     <label for="eventRegDeadline">Registration Deadline</label>
-                    <input type="datetime-local" id="eventRegDeadline" name="registration_deadline">
+                    <input type="datetime-local" id="eventRegDeadline">
                 </div>
-
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-success">💾 Save Event</button>
-                    <button type="button" id="cancelEventForm" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event</button>
+                    <button type="button" class="btn btn-danger" onclick="closeAddEventModal()">Cancel</button>
                 </div>
             </form>
         </div>

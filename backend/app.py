@@ -9,14 +9,50 @@ from database import EventDatabase
 from scrapers import SCRAPERS
 import logging
 from datetime import datetime
+from functools import wraps
 import os
 import threading
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def add_security_headers(response):
+    """Add security headers to every response."""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    # Cache static assets; don't cache API responses
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=3600'
+    elif request.path.startswith('/events') or request.path.startswith('/stats'):
+        response.headers['Cache-Control'] = 'no-store'
+    return response
+
+def require_admin(f):
+    """Decorator that checks X-Admin-Token header against ADMIN_TOKEN env var."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        admin_token = os.environ.get('ADMIN_TOKEN', '')
+        if not admin_token:
+            return jsonify({'success': False, 'error': 'Admin access is not configured'}), 403
+        if request.headers.get('X-Admin-Token', '') != admin_token:
+            return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+
 app = Flask(__name__, static_folder='static', static_url_path='/static')
-CORS(app)  # Allow iOS app to access API
+
+# CORS: allow requests from same origin (browser) and the Render deployment
+_ALLOWED_ORIGINS = os.environ.get(
+    'ALLOWED_ORIGINS',
+    'https://phillycalendar.onrender.com'
+).split(',')
+CORS(app, origins=_ALLOWED_ORIGINS, supports_credentials=False)
+
+app.after_request(add_security_headers)
 
 # Initialize database - uses PostgreSQL if DATABASE_URL is set, otherwise SQLite
 use_cloud = bool(os.environ.get('DATABASE_URL'))
@@ -135,7 +171,17 @@ def run_scrape_job():
 
 @app.route('/scrape', methods=['POST'])
 def scrape_events():
-    """Trigger event scraping in the background (returns 202 immediately)."""
+    """Trigger event scraping in the background (returns 202 immediately).
+    Requires the SCRAPE_TOKEN env variable to be set and matched in the
+    X-Scrape-Token request header or 'token' query param.
+    """
+    scrape_token = os.environ.get('SCRAPE_TOKEN', '')
+    if not scrape_token:
+        return jsonify({'success': False, 'error': 'Scraping is not configured'}), 403
+    provided = request.headers.get('X-Scrape-Token', '') or request.args.get('token', '')
+    if provided != scrape_token:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
+
     t = threading.Thread(target=run_scrape_job, daemon=True)
     t.start()
     return jsonify({
@@ -170,6 +216,7 @@ def health_check():
 
 # Event Management Endpoints
 @app.route('/events', methods=['POST'])
+@require_admin
 def add_event():
     """Add a new event manually"""
     try:
@@ -207,6 +254,7 @@ def add_event():
 
 
 @app.route('/events/<int:event_id>', methods=['PUT'])
+@require_admin
 def update_event(event_id):
     """Update an existing event"""
     try:
@@ -228,6 +276,7 @@ def update_event(event_id):
 
 
 @app.route('/events/<int:event_id>', methods=['DELETE'])
+@require_admin
 def delete_event(event_id):
     """Delete an event"""
     try:
@@ -246,7 +295,7 @@ def delete_event(event_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-# Bookmark Endpoints
+# Bookmark Endpoints (DEPRECATED: bookmarks are now stored in client localStorage)
 @app.route('/bookmarks', methods=['GET'])
 def get_bookmarks():
     """Get all bookmarked events"""
@@ -345,5 +394,5 @@ if __name__ == '__main__':
     logger.info(f"Database ready: {stats.get('total_events', 0)} events ({stats.get('upcoming_events', 0)} upcoming)")
     logger.info("Use POST /scrape to fetch fresh events from Eventbrite and Do215")
 
-    # Start Flask server
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Start Flask server (local development only — Render uses gunicorn)
+    app.run(debug=False, host='0.0.0.0', port=5000)

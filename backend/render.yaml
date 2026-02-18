@@ -11,3 +11,7 @@ services:
     envVars:
       - key: DATABASE_URL
         sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: SCRAPE_TOKEN
+        sync: false
