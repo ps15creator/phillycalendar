@@ -137,7 +137,7 @@ function applyFilters() {
             matchesMonth = eventMonthYear === currentMonth;
         }
 
-        const matchesSource = currentSource === 'all' || event.source === currentSource;
+        const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
 
         return matchesCategory && matchesMonth && matchesSource;
     });
@@ -180,12 +180,15 @@ function populateSourceFilter() {
     const sources = new Set();
 
     allEvents.forEach(event => {
-        sources.add(event.source);
+        // Only add non-empty, non-null source names
+        if (event.source && event.source.trim()) {
+            sources.add(event.source.trim());
+        }
     });
 
     const sortedSources = Array.from(sources).sort();
 
-    // Clear existing options except "All Sources"
+    // Clear existing options and reset to "All Sources"
     sourceSelect.innerHTML = '<option value="all">All Sources</option>';
 
     // Add source options
@@ -195,6 +198,10 @@ function populateSourceFilter() {
         option.textContent = source;
         sourceSelect.appendChild(option);
     });
+
+    // Reset selection to "All Sources" on reload
+    sourceSelect.value = 'all';
+    currentSource = 'all';
 }
 
 // Handle search
@@ -211,7 +218,7 @@ function handleSearch(e) {
             matchesMonth = eventMonthYear === currentMonth;
         }
 
-        const matchesSource = currentSource === 'all' || event.source === currentSource;
+        const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
 
         const matchesSearch = query === '' || (
             event.title.toLowerCase().includes(query) ||
