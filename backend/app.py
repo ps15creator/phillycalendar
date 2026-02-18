@@ -26,7 +26,7 @@ def add_security_headers(response):
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     # Cache static assets; don't cache API responses
     if request.path.startswith('/static/'):
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers['Cache-Control'] = 'no-cache, must-revalidate'
     elif request.path.startswith('/events') or request.path.startswith('/stats'):
         response.headers['Cache-Control'] = 'no-store'
     return response
