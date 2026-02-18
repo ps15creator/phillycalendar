@@ -177,56 +177,76 @@ body {
 }
 
 /* ============================================================
-   PHILLY TEAMS STRIP
+   PAGE OUTER — 3-col layout: rail | content | rail
    ============================================================ */
-.teams-strip {
-    background: var(--navy);
-    padding: 10px 0;
-    overflow: hidden;
-}
-
-.teams-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
+.page-outer {
     display: flex;
+    align-items: flex-start;
     gap: 0;
-    align-items: stretch;
+    position: relative;
 }
 
-.team-pill {
-    flex: 1;
+/* ============================================================
+   ICON RAILS — scrolling Philly icons on left/right
+   ============================================================ */
+.icon-rail {
+    width: 72px;
+    flex-shrink: 0;
+    background: var(--green);
+    overflow: hidden;
+    /* stick to viewport height as user scrolls */
+    position: sticky;
+    top: 70px; /* below sticky header */
+    height: calc(100vh - 70px);
     display: flex;
+    flex-direction: column;
+}
+
+.icon-rail-left  { border-right: 3px solid var(--red); }
+.icon-rail-right { border-left:  3px solid var(--gold); }
+
+.icon-track {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 0.8em;
-    font-weight: 700;
-    color: rgba(255,255,255,0.6);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-right: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.2s;
-    cursor: default;
+    gap: 0;
+    animation: scrollDown 18s linear infinite;
 }
 
-.team-pill:last-child { border-right: none; }
-
-.team-pill:hover {
-    color: white;
-    background: rgba(255,255,255,0.06);
+.icon-track-reverse {
+    animation: scrollUp 22s linear infinite;
 }
 
-.team-pill .team-emoji { font-size: 1.3em; }
-.team-pill .team-name { font-size: 0.85em; }
+.icon-track span {
+    font-size: 2.1em;
+    padding: 16px 0;
+    line-height: 1;
+    opacity: 0.85;
+    transition: opacity 0.2s, transform 0.2s;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3));
+}
+
+.icon-track span:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+@keyframes scrollDown {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+}
+
+@keyframes scrollUp {
+    0%   { transform: translateY(-50%); }
+    100% { transform: translateY(0); }
+}
 
 /* ============================================================
    MAIN LAYOUT
    ============================================================ */
 .page-wrapper {
-    max-width: 1100px;
-    margin: 0 auto;
+    flex: 1;
+    min-width: 0;
     padding: 24px 20px 60px;
 }
 
@@ -953,17 +973,20 @@ body {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+@media (max-width: 900px) {
+    .icon-rail { width: 52px; }
+    .icon-track span { font-size: 1.7em; padding: 12px 0; }
+}
+
 @media (max-width: 700px) {
+    .icon-rail { display: none; }
+
     .header-inner { padding: 14px 16px 12px; }
     .header-brand h1 { font-size: 1.35em; }
 
     .hero-banner { padding: 32px 16px 28px; }
     .hero-banner h2 { font-size: 1.7em; }
     .hero-banner p { font-size: 0.93em; }
-
-    .teams-inner { gap: 0; }
-    .team-pill { padding: 6px 4px; }
-    .team-pill .team-name { display: none; }
 
     .page-wrapper { padding: 16px 14px 50px; }
 
