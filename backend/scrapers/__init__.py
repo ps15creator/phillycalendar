@@ -43,6 +43,7 @@ SCRAPERS = [
     RunSignUpScraper,           # Philadelphia running races via RunSignUp API
     PhillyRunnerScraper,        # Philadelphia Runner-sponsored races (RunSignUp)
     FilmadelphiaScraper,        # Philadelphia Film Society via Eventbrite
+    VisitPhillyScraper,         # Visit Philadelphia official tourism events
 ]
 
 __all__ = [

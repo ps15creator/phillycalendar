@@ -20,9 +20,8 @@ class VisitPhillyScraper(BaseScraper):
 
     PAGES = [
         'https://www.visitphilly.com/events/',
-        'https://www.visitphilly.com/things-to-do/arts-culture/',
+        'https://www.visitphilly.com/things-to-do/',
         'https://www.visitphilly.com/things-to-do/food-drink/',
-        'https://www.visitphilly.com/things-to-do/outdoor-recreation/',
     ]
 
     KEYWORD_CATEGORY_MAP = {
