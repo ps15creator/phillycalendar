@@ -190,9 +190,9 @@ body {
     inset: 0;
     background: linear-gradient(
         to bottom,
-        rgba(0,0,0,0.25) 0%,
-        rgba(0,0,0,0.50) 40%,
-        rgba(0,0,0,0.72) 100%
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.25) 45%,
+        rgba(0,0,0,0.52) 100%
     );
 }
 
@@ -210,7 +210,7 @@ body {
     line-height: 1.08;
     margin-bottom: 20px;
     letter-spacing: -0.03em;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    text-shadow: 0 2px 16px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.4);
 }
 
 .hero-banner h2 .accent-red  { color: var(--red); }
@@ -223,7 +223,7 @@ body {
     max-width: 660px;
     font-weight: 400;
     opacity: 0.95;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.55);
 }
 
 .hero-tagline .accent-gold { color: var(--gold); font-weight: 600; }
