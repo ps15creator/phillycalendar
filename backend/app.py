@@ -622,6 +622,38 @@ def auth_db_test():
         return jsonify({'success': False, 'error': str(e), 'use_postgres': db.use_postgres}), 500
 
 
+@app.route('/auth/smtp-test', methods=['GET'])
+def smtp_test():
+    """Temporary debug: test SMTP connection and report exact error."""
+    import smtplib, ssl, os
+    host     = os.environ.get('MAIL_HOST', 'smtp.gmail.com')
+    port     = int(os.environ.get('MAIL_PORT', '587'))
+    user     = os.environ.get('MAIL_USER', '').strip()
+    password = os.environ.get('MAIL_PASS', '').strip().replace(' ', '')
+    from_addr = os.environ.get('MAIL_FROM', user).strip()
+    try:
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP(host, port, timeout=10) as smtp:
+            smtp.ehlo()
+            smtp.starttls(context=ctx)
+            smtp.login(user, password)
+        return jsonify({
+            'success': True,
+            'message': 'SMTP login OK',
+            'user': user,
+            'from': from_addr,
+            'password_length': len(password)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'user': user,
+            'from': from_addr,
+            'password_length': len(password)
+        }), 500
+
+
 @app.route('/auth/me', methods=['GET'])
 def auth_me():
     """Return current user info, or logged_in: false."""
