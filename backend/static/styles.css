@@ -168,7 +168,7 @@ body {
 .hero-bg-image {
     position: absolute;
     inset: 0;
-    background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Philadelphia_skyline_from_south_street_bridge_2019.jpg/1280px-Philadelphia_skyline_from_south_street_bridge_2019.jpg');
+    background-image: url('/static/images/philly-skyline.jpg');
     background-size: cover;
     background-position: center 40%;
     background-repeat: no-repeat;
