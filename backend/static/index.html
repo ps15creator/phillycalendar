@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philly Events — Your City, Your Calendar</title>
     <meta name="description" content="Discover concerts, races, festivals, and neighborhood events across Philadelphia. One calendar, auto-updated every 4 hours.">
-    <link rel="stylesheet" href="/static/styles.css?v=11">
+    <link rel="stylesheet" href="/static/styles.css?v=12">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
@@ -15,20 +15,26 @@
          ====================================================== -->
     <header class="site-header">
         <div class="header-inner">
-            <div class="header-logo-wrap">
-                <img src="/static/images/eagles-logo.png" alt="Philadelphia Eagles" class="header-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-                <span class="header-logo-fallback" aria-hidden="true" style="display: none;">🦅</span>
-            </div>
             <div class="header-brand">
-                <h1>Philly <span class="red">Events</span> <span class="gold">Calendar</span></h1>
-                <p class="header-tagline">Your city. Your events.</p>
+                <svg class="header-bell" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <div>
+                    <h1><span class="hw">Philly</span> <span class="red">Events</span> <span class="gold">Calendar</span></h1>
+                    <p class="header-tagline">Your city. Your events. Go Birds! 🦅</p>
+                </div>
             </div>
             <nav class="header-nav">
-                <button id="profileBtn" class="btn btn-secondary" onclick="handleProfileBtn()">👤 Sign In</button>
-                <button id="refreshBtn" class="btn btn-primary">🔄 Refresh</button>
-                <button id="adminBtn" class="btn btn-secondary" onclick="handleAdminBtn()">🔑 Admin</button>
+                <button id="refreshBtn" class="btn btn-outline-nav">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                    Refresh
+                </button>
+                <button id="profileBtn" class="btn btn-outline-nav" onclick="handleProfileBtn()">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Sign In
+                </button>
+                <button id="adminBtn" class="btn btn-admin" onclick="handleAdminBtn()">Admin</button>
             </nav>
         </div>
+        <div class="header-red-line"></div>
     </header>
 
     <!-- ======================================================
@@ -75,106 +81,76 @@
          ====================================================== -->
         <main class="page-wrapper">
 
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-card">
-                <span class="stat-number" id="totalEvents">0</span>
-                <span class="stat-label">Total Events</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="upcomingEvents">0</span>
-                <span class="stat-label">Upcoming</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number" id="lastSync">—</span>
-                <span class="stat-label">Last Updated</span>
-            </div>
-        </div>
-
-        <!-- Philly Pride Strip -->
-        <div class="philly-pride-strip" role="complementary" aria-label="Philly spirit">
-            <div class="pride-landmarks">
-                <!-- Liberty Bell -->
-                <div class="pride-landmark-icon" title="Liberty Bell">
-                    <svg viewBox="0 0 28 32" width="22" height="25" fill="none" aria-hidden="true">
-                        <rect x="10" y="1" width="8" height="5" rx="2" fill="#004C54"/>
-                        <path d="M5 6 C3 10 2 15 2 19 C2 24 7 29 14 29 C21 29 26 24 26 19 C26 15 25 10 23 6Z" fill="#004C54"/>
-                        <rect x="5" y="29" width="18" height="3" rx="1.5" fill="#004C54"/>
-                        <line x1="9" y1="18" x2="19" y2="18" stroke="white" stroke-width="1.5"/>
-                    </svg>
-                </div>
-                <!-- Rocky Steps (Art Museum) -->
-                <div class="pride-landmark-icon" title="Rocky Steps — Art Museum">
-                    <svg viewBox="0 0 34 28" width="26" height="22" fill="none" aria-hidden="true">
-                        <rect x="1" y="24" width="32" height="4" rx="1" fill="#E81828"/>
-                        <rect x="4" y="19" width="26" height="5" rx="1" fill="#E81828"/>
-                        <rect x="7" y="14" width="20" height="5" rx="1" fill="#E81828"/>
-                        <rect x="10" y="6" width="14" height="8" rx="1" fill="#E81828"/>
-                        <path d="M8 6 L17 1 L26 6Z" fill="#c0101e"/>
-                    </svg>
-                </div>
-                <!-- LOVE Park sculpture -->
-                <div class="pride-landmark-icon" title="LOVE Park">
-                    <svg viewBox="0 0 30 30" width="24" height="24" fill="none" aria-hidden="true">
-                        <text x="2" y="15" font-family="Georgia,serif" font-size="11" font-weight="900" fill="#002D72">LO</text>
-                        <text x="2" y="27" font-family="Georgia,serif" font-size="11" font-weight="900" fill="#002D72">VE</text>
-                    </svg>
-                </div>
-                <!-- City Hall dome -->
-                <div class="pride-landmark-icon" title="Philadelphia City Hall">
-                    <svg viewBox="0 0 30 34" width="22" height="26" fill="none" aria-hidden="true">
-                        <rect x="4" y="17" width="22" height="17" rx="1" fill="#E5A00D"/>
-                        <ellipse cx="15" cy="17" rx="11" ry="9" fill="#E5A00D"/>
-                        <rect x="13.5" y="5" width="3" height="13" fill="#E5A00D"/>
-                        <circle cx="15" cy="4" r="3" fill="#E5A00D"/>
-                        <rect x="7" y="21" width="4" height="5" rx="1" fill="rgba(0,0,0,0.18)"/>
-                        <rect x="19" y="21" width="4" height="5" rx="1" fill="rgba(0,0,0,0.18)"/>
-                    </svg>
+        <!-- Neighborhood Pills Strip -->
+        <div class="neighborhood-strip" aria-label="Explore Philly neighborhoods">
+            <div class="neighborhood-strip-inner">
+                <span class="neighborhood-strip-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    EXPLORE PHILLY NEIGHBORHOODS
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </span>
+                <div class="neighborhood-pills-scroll">
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Rittenhouse</button>
+                    <button class="nbhd-pill" onclick="handleFilter('running')">Fairmount Park</button>
+                    <button class="nbhd-pill" onclick="handleFilter('artsAndCulture')">Old City</button>
+                    <button class="nbhd-pill" onclick="handleFilter('music')">Northern Liberties</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Queen Village</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Graduate Hospital</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Kensington</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Fishtown</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Manayunk</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Brewerytown</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Point Breeze</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Chestnut Hill</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">West Philly</button>
+                    <button class="nbhd-pill" onclick="handleFilter('community')">Passyunk</button>
                 </div>
             </div>
-            <p class="pride-quote">"In Philadelphia, every corner has a story."</p>
-            <p class="pride-neighborhoods">
-                <strong>Explore:</strong>
-                <a href="#" onclick="handleFilter('community'); return false;">Fishtown</a> ·
-                <a href="#" onclick="handleFilter('community'); return false;">Rittenhouse</a> ·
-                <a href="#" onclick="handleFilter('running'); return false;">Fairmount Park</a> ·
-                <a href="#" onclick="handleFilter('artsAndCulture'); return false;">Old City</a> ·
-                <a href="#" onclick="handleFilter('music'); return false;">Northern Liberties</a>
-            </p>
         </div>
 
         <!-- Controls Panel -->
         <div class="controls-panel">
-            <div class="search-bar">
-                <label for="searchInput">Search events, venues, artists</label>
+            <div class="search-bar-wrap">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input type="text" id="searchInput" placeholder="Search events, venues, artists..." aria-label="Search events, venues, artists">
             </div>
 
-            <div class="filter-row-wrap" id="filterRowWrap">
-            <div class="filter-row">
+            <div class="filter-row" id="filterRowWrap">
                 <button class="filter-btn active" data-category="all">All Events</button>
-                <button class="filter-btn" data-category="running" title="Eagles green — go Birds!">🏃 Running</button>
-                <button class="filter-btn" data-category="music" title="Phillies red — ring the bell!">🎵 Music</button>
-                <button class="filter-btn" data-category="artsAndCulture" title="Arts &amp; Culture">🎨 Arts</button>
-                <button class="filter-btn" data-category="foodAndDrink" title="Sixers blue — trust the process">🍽️ Food</button>
-                <button class="filter-btn" data-category="community" title="Union navy — doop!">👥 Community</button>
-            </div>
+                <button class="filter-btn" data-category="running">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M15 8l-3 3-3-3M9 12l-2 6M15 12l2 6"/></svg>
+                    Running
+                </button>
+                <button class="filter-btn" data-category="music">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    Music
+                </button>
+                <button class="filter-btn" data-category="artsAndCulture">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12a4 4 0 0 0 8 0"/></svg>
+                    Arts
+                </button>
+                <button class="filter-btn" data-category="foodAndDrink">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+                    Food
+                </button>
+                <button class="filter-btn" data-category="community">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Community
+                </button>
             </div>
 
             <div class="controls-bottom">
                 <div class="select-wrap">
-                    <label for="monthSelect">📅 Month</label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E81828" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <select id="monthSelect" class="month-select">
                         <option value="all">All Months</option>
                     </select>
                 </div>
                 <div class="select-wrap">
-                    <label for="sourceSelect">📡 Source</label>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                     <select id="sourceSelect" class="source-select">
                         <option value="all">All Sources</option>
                     </select>
-                </div>
-                <div class="action-btns">
                 </div>
             </div>
         </div>
@@ -202,91 +178,32 @@
          FOOTER
          ====================================================== -->
     <footer class="site-footer">
-        <div class="footer-pride" aria-label="Philadelphia teams and landmarks">
-            <!-- Eagles: wing silhouette -->
-            <a href="https://www.philadelphiaeagles.com" target="_blank" rel="noopener noreferrer" class="footer-pride-item eagles" title="Philadelphia Eagles" aria-label="Philadelphia Eagles">
-                <svg viewBox="0 0 28 28" width="20" height="20" fill="none" aria-hidden="true">
-                    <path d="M14 5 C7 9 5 16 9 22 C11 18 13 15 14 13 C15 15 17 18 19 22 C23 16 21 9 14 5Z" fill="white" opacity="0.9"/>
-                    <circle cx="14" cy="9" r="2" fill="white"/>
-                </svg>
-            </a>
-            <!-- Phillies: serif P -->
-            <a href="https://www.mlb.com/phillies" target="_blank" rel="noopener noreferrer" class="footer-pride-item phillies" title="Philadelphia Phillies" aria-label="Philadelphia Phillies">
-                <svg viewBox="0 0 28 28" width="20" height="20" fill="none" aria-hidden="true">
-                    <text x="14" y="21" font-family="Georgia,serif" font-size="18" font-weight="900" fill="white" text-anchor="middle">P</text>
-                </svg>
-            </a>
-            <!-- Sixers: 76 -->
-            <a href="https://www.nba.com/sixers" target="_blank" rel="noopener noreferrer" class="footer-pride-item sixers" title="Philadelphia 76ers" aria-label="Philadelphia 76ers">
-                <svg viewBox="0 0 32 28" width="24" height="20" fill="none" aria-hidden="true">
-                    <text x="16" y="20" font-family="Arial Black,Arial,sans-serif" font-size="13" font-weight="900" fill="white" text-anchor="middle">76</text>
-                </svg>
-            </a>
-            <!-- Flyers: A-frame triangle -->
-            <a href="https://www.nhl.com/flyers" target="_blank" rel="noopener noreferrer" class="footer-pride-item flyers" title="Philadelphia Flyers" aria-label="Philadelphia Flyers">
-                <svg viewBox="0 0 28 28" width="20" height="20" fill="none" aria-hidden="true">
-                    <path d="M6 22 L14 6 L22 22" stroke="black" stroke-width="3" stroke-linejoin="round" fill="none"/>
-                    <line x1="9" y1="17" x2="19" y2="17" stroke="black" stroke-width="2.5"/>
-                </svg>
-            </a>
-            <!-- Union: shield -->
-            <a href="https://www.philadelphiaunion.com" target="_blank" rel="noopener noreferrer" class="footer-pride-item union" title="Philadelphia Union" aria-label="Philadelphia Union">
-                <svg viewBox="0 0 28 28" width="20" height="20" fill="none" aria-hidden="true">
-                    <path d="M14 4 L22 8 L22 18 C22 22 14 25 14 25 C14 25 6 22 6 18 L6 8 Z" fill="none" stroke="black" stroke-width="2"/>
-                    <text x="14" y="18" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="black" text-anchor="middle">UNION</text>
-                </svg>
-            </a>
-            <!-- Liberty Bell -->
-            <a href="https://www.nps.gov/inde/liberty-bell-center.htm" target="_blank" rel="noopener noreferrer" class="footer-pride-item liberty" title="Liberty Bell" aria-label="Liberty Bell">
-                <svg viewBox="0 0 28 32" width="18" height="22" fill="none" aria-hidden="true">
-                    <rect x="10" y="1" width="8" height="5" rx="2" fill="#333"/>
-                    <path d="M5 6 C3 10 2 15 2 19 C2 24 7 29 14 29 C21 29 26 24 26 19 C26 15 25 10 23 6Z" fill="#555"/>
-                    <rect x="5" y="29" width="18" height="3" rx="1.5" fill="#444"/>
-                    <circle cx="14" cy="22" r="2" fill="#888"/>
-                </svg>
-            </a>
+        <!-- PHILLY letter circles -->
+        <div class="footer-philly-letters" aria-label="PHILLY">
+            <span class="philly-letter" style="background:#004C54;">P</span>
+            <span class="philly-letter" style="background:#E81828;">H</span>
+            <span class="philly-letter" style="background:#006BB6;">I</span>
+            <span class="philly-letter" style="background:#F4791F;">L</span>
+            <span class="philly-letter" style="background:#E5A00D;">L</span>
+            <span class="philly-letter" style="background:#4a4a5a;">Y</span>
         </div>
 
-        <!-- Philly Neighborhoods Marquee -->
-        <div class="neighborhoods-marquee" aria-hidden="true">
-            <div class="neighborhoods-track">
-                <span>Fishtown</span><span class="sep">·</span>
-                <span>Rittenhouse Square</span><span class="sep">·</span>
-                <span>Old City</span><span class="sep">·</span>
-                <span>Northern Liberties</span><span class="sep">·</span>
-                <span>South Philly</span><span class="sep">·</span>
-                <span>Manayunk</span><span class="sep">·</span>
-                <span>Fairmount</span><span class="sep">·</span>
-                <span>Passyunk</span><span class="sep">·</span>
-                <span>West Philly</span><span class="sep">·</span>
-                <span>Chestnut Hill</span><span class="sep">·</span>
-                <span>Kensington</span><span class="sep">·</span>
-                <span>Queen Village</span><span class="sep">·</span>
-                <span>Graduate Hospital</span><span class="sep">·</span>
-                <span>Brewerytown</span><span class="sep">·</span>
-                <span>Point Breeze</span><span class="sep">·</span>
-                <span>Fishtown</span><span class="sep">·</span>
-                <span>Rittenhouse Square</span><span class="sep">·</span>
-                <span>Old City</span><span class="sep">·</span>
-                <span>Northern Liberties</span><span class="sep">·</span>
-                <span>South Philly</span><span class="sep">·</span>
-                <span>Manayunk</span><span class="sep">·</span>
-                <span>Fairmount</span><span class="sep">·</span>
-                <span>Passyunk</span><span class="sep">·</span>
-                <span>West Philly</span><span class="sep">·</span>
-                <span>Chestnut Hill</span><span class="sep">·</span>
-                <span>Kensington</span><span class="sep">·</span>
-                <span>Queen Village</span><span class="sep">·</span>
-                <span>Graduate Hospital</span><span class="sep">·</span>
-                <span>Brewerytown</span><span class="sep">·</span>
-                <span>Point Breeze</span><span class="sep">·</span>
-            </div>
+        <!-- Neighborhood grid -->
+        <div class="footer-neighborhoods">
+            <span>MANAYUNK</span><span>FAIRMOUNT</span><span>PASSYUNK</span>
+            <span>WEST PHILLY</span><span>CHESTNUT HILL</span><span>KENSINGTON</span>
+            <span>QUEEN VILLAGE</span><span>GRADUATE HOSPITAL</span>
+            <span>BREWERYTOWN</span><span>POINT BREEZE</span><span>FISHTOWN</span>
+            <span>RITTENHOUSE SQUARE</span><span>OLD CITY</span><span>NORTHERN LIBERTIES</span>
         </div>
 
-        <p class="footer-brand">Philly Events Calendar &nbsp;·&nbsp; E-A-G-L-E-S 🦅</p>
-        <p><a href="https://phillycalendar.onrender.com" target="_blank" rel="noopener noreferrer">phillycalendar.onrender.com</a></p>
-        <p class="footer-sub">Events refreshed every 4 hours · Data sourced from local Philly venues &amp; sites</p>
-        <p class="footer-sub" style="margin-top:6px;">© 2026 Palak Sharma · All rights reserved</p>
+        <!-- Bottom bar -->
+        <div class="footer-bottom">
+            <p class="footer-brand">Philly Events Calendar · E-A-G-L-E-S 🦅</p>
+            <p class="footer-url"><a href="https://phillycalendar.onrender.com" target="_blank" rel="noopener noreferrer">phillycalendar.onrender.com</a></p>
+            <p class="footer-sub">Events refreshed every 4 hours · Data sourced from local Philly venues &amp; sites</p>
+            <p class="footer-sub">© 2026 Palak Sharma · All rights reserved · Made with ❤️ in Philly</p>
+        </div>
     </footer>
 
     <!-- Scroll to top -->
