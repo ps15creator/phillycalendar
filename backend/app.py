@@ -101,9 +101,9 @@ def send_otp_email(to_email: str, code: str) -> bool:
 
     host     = os.environ.get('MAIL_HOST', 'smtp.gmail.com')
     port     = int(os.environ.get('MAIL_PORT', '587'))
-    user     = os.environ.get('MAIL_USER', '')
-    password = os.environ.get('MAIL_PASS', '')
-    from_addr = os.environ.get('MAIL_FROM', user)
+    user     = os.environ.get('MAIL_USER', '').strip()
+    password = os.environ.get('MAIL_PASS', '').strip().replace(' ', '')  # strip spaces from Gmail app password
+    from_addr = os.environ.get('MAIL_FROM', user).strip()
 
     if not user or not password:
         logger.warning('MAIL_USER / MAIL_PASS not configured — OTP email not sent')
@@ -136,7 +136,7 @@ def send_otp_email(to_email: str, code: str) -> bool:
 
     try:
         ctx = ssl.create_default_context()
-        with smtplib.SMTP(host, port) as smtp:
+        with smtplib.SMTP(host, port, timeout=10) as smtp:  # 10s timeout prevents gunicorn worker kill
             smtp.ehlo()
             smtp.starttls(context=ctx)
             smtp.login(user, password)
@@ -144,7 +144,7 @@ def send_otp_email(to_email: str, code: str) -> bool:
         logger.info(f'OTP email sent to {to_email}')
         return True
     except Exception as e:
-        logger.error(f'Failed to send OTP email to {to_email}: {e}')
+        logger.error(f'Failed to send OTP email to {to_email}: {e}', exc_info=True)
         return False
 
 
