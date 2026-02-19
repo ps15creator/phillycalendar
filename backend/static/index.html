@@ -92,35 +92,35 @@
                 <div class="neighborhood-pills-scroll" aria-label="Scrolling neighborhood list">
                     <!-- Track is duplicated so the marquee loops seamlessly -->
                     <div class="neighborhood-pills-track" aria-hidden="false">
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Rittenhouse</button>
-                        <button class="nbhd-pill" onclick="handleFilter('running')">Fairmount Park</button>
-                        <button class="nbhd-pill" onclick="handleFilter('artsAndCulture')">Old City</button>
-                        <button class="nbhd-pill" onclick="handleFilter('music')">Northern Liberties</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Queen Village</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Graduate Hospital</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Kensington</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Fishtown</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Manayunk</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Brewerytown</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Point Breeze</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Chestnut Hill</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">West Philly</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')">Passyunk</button>
-                        <!-- Duplicate set for seamless loop -->
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Rittenhouse</button>
-                        <button class="nbhd-pill" onclick="handleFilter('running')" aria-hidden="true" tabindex="-1">Fairmount Park</button>
-                        <button class="nbhd-pill" onclick="handleFilter('artsAndCulture')" aria-hidden="true" tabindex="-1">Old City</button>
-                        <button class="nbhd-pill" onclick="handleFilter('music')" aria-hidden="true" tabindex="-1">Northern Liberties</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Queen Village</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Graduate Hospital</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Kensington</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Fishtown</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Manayunk</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Brewerytown</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Point Breeze</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Chestnut Hill</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">West Philly</button>
-                        <button class="nbhd-pill" onclick="handleFilter('community')" aria-hidden="true" tabindex="-1">Passyunk</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Rittenhouse')">Rittenhouse</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Fairmount Park')">Fairmount Park</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Old City')">Old City</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Northern Liberties')">Northern Liberties</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Queen Village')">Queen Village</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Graduate Hospital')">Graduate Hospital</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Kensington')">Kensington</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Fishtown')">Fishtown</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Manayunk')">Manayunk</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Brewerytown')">Brewerytown</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Point Breeze')">Point Breeze</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Chestnut Hill')">Chestnut Hill</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('West Philly')">West Philly</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Passyunk')">Passyunk</button>
+                        <!-- Duplicate set for seamless loop — aria-hidden so screen readers skip -->
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Rittenhouse')" aria-hidden="true" tabindex="-1">Rittenhouse</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Fairmount Park')" aria-hidden="true" tabindex="-1">Fairmount Park</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Old City')" aria-hidden="true" tabindex="-1">Old City</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Northern Liberties')" aria-hidden="true" tabindex="-1">Northern Liberties</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Queen Village')" aria-hidden="true" tabindex="-1">Queen Village</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Graduate Hospital')" aria-hidden="true" tabindex="-1">Graduate Hospital</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Kensington')" aria-hidden="true" tabindex="-1">Kensington</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Fishtown')" aria-hidden="true" tabindex="-1">Fishtown</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Manayunk')" aria-hidden="true" tabindex="-1">Manayunk</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Brewerytown')" aria-hidden="true" tabindex="-1">Brewerytown</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Point Breeze')" aria-hidden="true" tabindex="-1">Point Breeze</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Chestnut Hill')" aria-hidden="true" tabindex="-1">Chestnut Hill</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('West Philly')" aria-hidden="true" tabindex="-1">West Philly</button>
+                        <button class="nbhd-pill" onclick="handleNeighborhoodFilter('Passyunk')" aria-hidden="true" tabindex="-1">Passyunk</button>
                     </div>
                 </div>
             </div>

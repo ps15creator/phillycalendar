@@ -390,6 +390,13 @@ body {
     color: var(--green);
     background: var(--green-light);
 }
+.nbhd-pill.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 76, 84, 0.3);
+}
 
 /* ============================================================
    CONTROLS PANEL

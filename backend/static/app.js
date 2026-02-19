@@ -6,6 +6,25 @@ let filteredEvents = [];
 let currentCategory = 'all';
 let currentMonth = 'all';
 let currentSource = 'all';
+let currentNeighborhood = 'all';
+
+// Keyword mapping: neighbourhood pill label → location substrings to match
+const NEIGHBORHOOD_KEYWORDS = {
+    'Rittenhouse':        ['rittenhouse', 'sansom', 'walnut street'],
+    'Fairmount Park':     ['fairmount', 'kelly drive', 'west river drive', 'schuylkill', 'wissahickon'],
+    'Old City':           ['old city', 'independence', '2nd st', 'old city arts'],
+    'Northern Liberties': ['northern liberties', 'liberty'],
+    'Queen Village':      ['queen village', 'south street'],
+    'Graduate Hospital':  ['graduate hospital'],
+    'Kensington':         ['kensington'],
+    'Fishtown':           ['fishtown', 'frankford ave', 'johnny brenda'],
+    'Manayunk':           ['manayunk'],
+    'Brewerytown':        ['brewerytown', 'yards brewing'],
+    'Point Breeze':       ['point breeze', 'passyunk', 'grays ferry'],
+    'Chestnut Hill':      ['chestnut hill'],
+    'West Philly':        ['west philly', 'clark park', '43rd', 'university of pennsylvania', 'franklin field'],
+    'Passyunk':           ['passyunk', 'east passyunk'],
+};
 let bookmarkedIds = new Set(); // Track bookmarked event IDs (stored in localStorage)
 let currentUser = null;        // { id, email, display_name } when logged in, else null
 let savedEventIds = new Set(); // Server-side saved event IDs for the logged-in user
@@ -181,6 +200,30 @@ async function scrapeNewEvents() {
     }
 }
 
+// Handle neighbourhood pill filter
+function handleNeighborhoodFilter(neighborhood) {
+    if (currentNeighborhood === neighborhood) {
+        // Toggle off if already active
+        currentNeighborhood = 'all';
+    } else {
+        currentNeighborhood = neighborhood;
+    }
+
+    // Update pill active states (only first set — duplicates have aria-hidden)
+    document.querySelectorAll('.neighborhood-pills-track .nbhd-pill:not([aria-hidden])').forEach(pill => {
+        if (pill.textContent.trim() === currentNeighborhood) {
+            pill.classList.add('active');
+        } else {
+            pill.classList.remove('active');
+        }
+    });
+
+    applyFilters();
+
+    // Scroll to events section
+    document.querySelector('.controls-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // Handle category filter
 function handleFilter(category) {
     currentCategory = category;
@@ -213,9 +256,11 @@ function clearFilters() {
     currentCategory = 'all';
     currentMonth = 'all';
     currentSource = 'all';
+    currentNeighborhood = 'all';
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.category === 'all');
     });
+    document.querySelectorAll('.nbhd-pill').forEach(pill => pill.classList.remove('active'));
     document.getElementById('monthSelect').value = 'all';
     document.getElementById('sourceSelect').value = 'all';
     document.getElementById('searchInput').value = '';
@@ -236,7 +281,14 @@ function applyFilters() {
 
         const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
 
-        return matchesCategory && matchesMonth && matchesSource;
+        let matchesNeighborhood = true;
+        if (currentNeighborhood !== 'all') {
+            const keywords = NEIGHBORHOOD_KEYWORDS[currentNeighborhood] || [];
+            const loc = (event.location || '').toLowerCase();
+            matchesNeighborhood = keywords.some(kw => loc.includes(kw));
+        }
+
+        return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood;
     });
 
     renderEvents();
@@ -317,13 +369,20 @@ function handleSearch(e) {
 
         const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
 
+        let matchesNeighborhood = true;
+        if (currentNeighborhood !== 'all') {
+            const keywords = NEIGHBORHOOD_KEYWORDS[currentNeighborhood] || [];
+            const loc = (event.location || '').toLowerCase();
+            matchesNeighborhood = keywords.some(kw => loc.includes(kw));
+        }
+
         const matchesSearch = query === '' || (
             event.title.toLowerCase().includes(query) ||
             event.description.toLowerCase().includes(query) ||
             event.location.toLowerCase().includes(query)
         );
 
-        return matchesCategory && matchesMonth && matchesSource && matchesSearch;
+        return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood && matchesSearch;
     });
 
     renderEvents();
