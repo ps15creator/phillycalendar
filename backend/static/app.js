@@ -264,6 +264,10 @@ function clearFilters() {
     document.getElementById('monthSelect').value = 'all';
     document.getElementById('sourceSelect').value = 'all';
     document.getElementById('searchInput').value = '';
+    const inlineClear = document.getElementById('inlineClearBtn');
+    if (inlineClear) inlineClear.style.display = 'none';
+    const searchClear = document.getElementById('searchClearBtn');
+    if (searchClear) searchClear.style.display = 'none';
     updateActiveFiltersBar();
     applyFilters();
 }
@@ -311,6 +315,14 @@ function updateActiveFiltersBar() {
             document.getElementById('searchInput').dispatchEvent(new Event('input'));
         }});
     }
+
+    // Show/hide the inline clear button in the filter row
+    const inlineClear = document.getElementById('inlineClearBtn');
+    if (inlineClear) inlineClear.style.display = active.length > 0 ? 'inline-flex' : 'none';
+
+    // Show/hide the search ✕ clear button
+    const searchClear = document.getElementById('searchClearBtn');
+    if (searchClear) searchClear.style.display = searchVal ? 'block' : 'none';
 
     if (active.length === 0) {
         bar.style.display = 'none';
