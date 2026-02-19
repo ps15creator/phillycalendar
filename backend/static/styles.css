@@ -82,6 +82,16 @@ body {
     flex-shrink: 0;
 }
 
+.header-bell-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
 .header-brand h1 {
     font-size: 1.45em;
     font-weight: 800;
