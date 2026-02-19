@@ -1,28 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" fill="none">
-  <!-- Yoke / crown mount -->
-  <rect x="34" y="2" width="32" height="10" rx="3" fill="#E5A00D"/>
-  <rect x="44" y="10" width="12" height="6" rx="2" fill="#C98B00"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80" fill="none">
+  <!-- Hanging loop at top -->
+  <path d="M28 4 C28 2 36 2 36 4 L36 8 L28 8 Z" fill="#E5A00D"/>
+  <rect x="26" y="6" width="12" height="5" rx="2" fill="#C8981A"/>
 
-  <!-- Bell body -->
-  <path d="M20 18 C18 32 14 48 14 62 C14 88 30 108 50 108 C70 108 86 88 86 62 C86 48 82 32 80 18 Z"
+  <!-- Bell shape: classic wide-bottomed bell -->
+  <path d="M32 11
+           C26 11 16 16 13 28
+           C10 38 9 50 8 62
+           L56 62
+           C55 50 54 38 51 28
+           C48 16 38 11 32 11 Z"
         fill="#E5A00D"/>
 
-  <!-- Bell shading / depth -->
-  <path d="M50 18 C64 18 76 32 80 48 C82 56 82 62 80 70 C76 86 70 100 62 108 C58 110 54 110 50 110"
-        fill="#C98B00" opacity="0.5"/>
+  <!-- Shading on right -->
+  <path d="M38 13 C44 17 48 26 50 36 C52 46 53 54 54 62 L48 62 C47 52 46 44 44 34 C42 24 40 16 38 13 Z"
+        fill="#C8981A" opacity="0.55"/>
 
-  <!-- Crack (iconic Liberty Bell crack) -->
-  <path d="M50 40 L47 58 L50 72 L52 88 L50 108"
-        stroke="#7a5c00" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+  <!-- Highlight on left -->
+  <path d="M26 13 C22 17 19 26 17 36 L15 62 L20 62 C21 52 22 44 24 34 C25 26 26 17 26 13 Z"
+        fill="#F4B830" opacity="0.3"/>
 
-  <!-- Horizontal band across bell -->
-  <path d="M22 68 Q50 72 78 68" stroke="#C98B00" stroke-width="3" fill="none"/>
+  <!-- Waist band -->
+  <rect x="9" y="46" width="46" height="6" rx="2" fill="#C8981A"/>
 
-  <!-- Bell lip / rim -->
-  <path d="M14 104 Q50 114 86 104 L88 112 Q50 124 12 112 Z"
-        fill="#C98B00"/>
+  <!-- Crack -->
+  <path d="M31 18 L29 36 L32 46 L30 60" stroke="#8B6200" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+
+  <!-- Bell bottom lip -->
+  <path d="M8 62 Q7 70 11 73 L53 73 Q57 70 56 62 Z" fill="#C8981A"/>
+  <ellipse cx="32" cy="73" rx="22" ry="3.5" fill="#B8880A"/>
 
   <!-- Clapper -->
-  <line x1="50" y1="108" x2="50" y2="122" stroke="#9a7500" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="50" cy="124" r="4" fill="#9a7500"/>
+  <line x1="32" y1="68" x2="32" y2="78" stroke="#8B6200" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="32" cy="80" r="3" fill="#8B6200"/>
 </svg>
