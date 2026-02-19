@@ -264,7 +264,69 @@ function clearFilters() {
     document.getElementById('monthSelect').value = 'all';
     document.getElementById('sourceSelect').value = 'all';
     document.getElementById('searchInput').value = '';
+    updateActiveFiltersBar();
     applyFilters();
+}
+
+// Store clear actions for active filter tags (keyed by index)
+const _filterTagActions = {};
+
+// Update the active filters bar — shows a tag for each active filter
+function updateActiveFiltersBar() {
+    const bar  = document.getElementById('activeFiltersBar');
+    const tags = document.getElementById('activeFilterTags');
+    if (!bar || !tags) return;
+
+    const searchVal = (document.getElementById('searchInput')?.value || '').trim();
+    const active = [];
+
+    if (currentCategory !== 'all') {
+        const label = { running:'Running', music:'Music', artsAndCulture:'Arts & Culture',
+                        foodAndDrink:'Food & Drink', community:'Community' }[currentCategory] || currentCategory;
+        active.push({ label, key: 'cat', clear: () => handleFilter('all') });
+    }
+    if (currentNeighborhood !== 'all') {
+        const nb = currentNeighborhood;
+        active.push({ label: '📍 ' + nb, key: 'nbhd', clear: () => handleNeighborhoodFilter(nb) });
+    }
+    if (currentMonth !== 'all') {
+        const [y, m] = currentMonth.split('-');
+        const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        active.push({ label: '📅 ' + monthName, key: 'month', clear: () => {
+            currentMonth = 'all';
+            document.getElementById('monthSelect').value = 'all';
+            applyFilters();
+        }});
+    }
+    if (currentSource !== 'all') {
+        active.push({ label: '🔍 ' + currentSource, key: 'source', clear: () => {
+            currentSource = 'all';
+            document.getElementById('sourceSelect').value = 'all';
+            applyFilters();
+        }});
+    }
+    if (searchVal) {
+        active.push({ label: '🔎 "' + searchVal + '"', key: 'search', clear: () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').dispatchEvent(new Event('input'));
+        }});
+    }
+
+    if (active.length === 0) {
+        bar.style.display = 'none';
+        tags.innerHTML = '';
+        return;
+    }
+
+    // Store clear actions globally so inline onclick can call them
+    active.forEach((f, i) => { _filterTagActions[f.key] = f.clear; });
+
+    bar.style.display = 'flex';
+    tags.innerHTML = active.map(f =>
+        `<button class="active-filter-tag" onclick="_filterTagActions['${f.key}']()" title="Remove this filter">
+            ${escapeHtml(f.label)} <span class="tag-x">✕</span>
+        </button>`
+    ).join('');
 }
 
 // Apply all filters
@@ -291,6 +353,7 @@ function applyFilters() {
         return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood;
     });
 
+    updateActiveFiltersBar();
     renderEvents();
 }
 
@@ -385,6 +448,7 @@ function handleSearch(e) {
         return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood && matchesSearch;
     });
 
+    updateActiveFiltersBar();
     renderEvents();
 }
 

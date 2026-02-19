@@ -399,6 +399,82 @@ body {
 }
 
 /* ============================================================
+   ACTIVE FILTERS BAR
+   ============================================================ */
+.active-filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: white;
+    border: 1.5px solid var(--green);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 76, 84, 0.08);
+}
+
+.active-filters-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.active-filter-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    border: 1px solid rgba(0, 76, 84, 0.2);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.active-filter-tag:hover {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+}
+.active-filter-tag .tag-x {
+    font-size: 11px;
+    opacity: 0.7;
+    font-weight: 700;
+}
+
+.clear-all-btn {
+    margin-left: auto;
+    background: none;
+    border: 1.5px solid var(--red);
+    color: var(--red);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: var(--font);
+}
+.clear-all-btn:hover {
+    background: var(--red);
+    color: white;
+}
+
+/* ============================================================
    CONTROLS PANEL
    ============================================================ */
 .controls-panel {
