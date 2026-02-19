@@ -121,19 +121,25 @@ class PhillyMajorRacesScraper(BaseScraper):
             # 2) Hunt for date patterns in page text
             if not start_date:
                 text = soup.get_text(' ', strip=True)
-                # Look for year-anchored patterns like "April 27, 2025" or "April 27, 2026"
+                # Patterns ordered by specificity — most specific first
+                # Handles: "November 20, 2026", "November 20-22, 2026", "11/20/2026", "2026-11-20"
                 date_patterns = [
-                    r'(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2}',
+                    # Date range like "November 20-22, 2026" — capture start day
+                    r'((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2})-\d{1,2},?\s+(20\d{2})',
+                    # Single date like "November 20, 2026"
+                    r'(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d{2}',
                     r'\d{1,2}/\d{1,2}/20\d{2}',
                     r'20\d{2}-\d{2}-\d{2}',
                 ]
                 now = datetime.now()
+                from dateutil import parser as du
                 for pattern in date_patterns:
                     matches = re.findall(pattern, text, re.IGNORECASE)
                     for m in matches:
                         try:
-                            from dateutil import parser as du
-                            dt = du.parse(m)
+                            # date_patterns[0] returns a tuple (e.g. ('November 20', '2026'))
+                            date_str = f"{m[0]}, {m[1]}" if isinstance(m, tuple) else m
+                            dt = du.parse(date_str)
                             dt = dt.replace(tzinfo=None)
                             if dt > now and dt < now + timedelta(days=548):
                                 start_date = dt
