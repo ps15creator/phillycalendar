@@ -820,7 +820,7 @@ class EventDatabase:
         """Verify an OTP code. Marks it used if valid. Returns True if valid."""
         conn = self.get_connection()
         ph = '%s' if self.use_postgres else '?'
-        now = datetime.now().isoformat()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         try:
             cursor = conn.cursor()
             cursor.execute(
@@ -845,7 +845,7 @@ class EventDatabase:
         """Delete expired or used OTP tokens. Returns count deleted."""
         conn = self.get_connection()
         ph = '%s' if self.use_postgres else '?'
-        now = datetime.now().isoformat()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         try:
             cursor = conn.cursor()
             cursor.execute(

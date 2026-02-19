@@ -541,27 +541,33 @@ def send_otp():
     import re
     from datetime import timedelta
 
-    data  = request.get_json() or {}
-    email = (data.get('email') or '').strip().lower()
-
-    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
-        return jsonify({'success': False, 'error': 'Invalid email address'}), 400
-
-    code       = f"{random.randint(0, 999999):06d}"
-    expires_at = (datetime.now() + timedelta(minutes=10)).isoformat()
-
     try:
-        db.create_otp(email, code, expires_at)
+        data  = request.get_json() or {}
+        email = (data.get('email') or '').strip().lower()
+
+        if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+            return jsonify({'success': False, 'error': 'Invalid email address'}), 400
+
+        code       = f"{random.randint(0, 999999):06d}"
+        # Use datetime object for Postgres TIMESTAMP compatibility
+        expires_at = (datetime.now() + timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
+
+        try:
+            db.create_otp(email, code, expires_at)
+        except Exception as e:
+            logger.error(f'create_otp failed: {e}', exc_info=True)
+            return jsonify({'success': False, 'error': f'Could not create OTP: {str(e)}'}), 500
+
+        sent = send_otp_email(email, code)
+        if not sent:
+            # Dev fallback: log the code so it's testable without email configured
+            logger.info(f'[DEV] OTP for {email}: {code}')
+
+        return jsonify({'success': True, 'message': 'Code sent! Check your email.'})
+
     except Exception as e:
-        logger.error(f'create_otp failed: {e}')
-        return jsonify({'success': False, 'error': 'Could not create OTP'}), 500
-
-    sent = send_otp_email(email, code)
-    if not sent:
-        # Dev fallback: log the code so it's testable without email configured
-        logger.info(f'[DEV] OTP for {email}: {code}')
-
-    return jsonify({'success': True, 'message': 'Code sent! Check your email.'})
+        logger.error(f'send_otp unexpected error: {e}', exc_info=True)
+        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
 
 
 @app.route('/auth/verify-otp', methods=['POST'])
@@ -601,6 +607,19 @@ def logout():
     """Log out the current user."""
     session.clear()
     return jsonify({'success': True})
+
+
+@app.route('/auth/db-test', methods=['GET'])
+def auth_db_test():
+    """Temporary debug: test if otp_tokens table exists and is writable."""
+    try:
+        from datetime import timedelta
+        code = '000000'
+        expires_at = (datetime.now() + timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M:%S')
+        db.create_otp('debug@test.com', code, expires_at)
+        return jsonify({'success': True, 'message': 'otp_tokens table OK', 'use_postgres': db.use_postgres})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'use_postgres': db.use_postgres}), 500
 
 
 @app.route('/auth/me', methods=['GET'])
