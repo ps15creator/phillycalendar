@@ -337,15 +337,39 @@ body {
     justify-content: center;
 }
 
+/* Marquee wrapper — clips overflow so pills slide in/out */
 .neighborhood-pills-scroll {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
 }
-.neighborhood-pills-scroll::-webkit-scrollbar { display: none; }
+
+/* The track holds two identical sets of pills end-to-end */
+.neighborhood-pills-track {
+    display: flex;
+    gap: 10px;
+    width: max-content;
+    animation: nbhd-marquee 28s linear infinite;
+}
+
+/* Pause on hover so users can click a pill */
+.neighborhood-pills-scroll:hover .neighborhood-pills-track {
+    animation-play-state: paused;
+}
+
+@keyframes nbhd-marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .neighborhood-pills-track {
+        animation: none;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
 
 .nbhd-pill {
     white-space: nowrap;
