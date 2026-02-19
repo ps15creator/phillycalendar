@@ -1,5 +1,5 @@
 // Service Worker for offline support
-const CACHE_NAME = 'philly-calendar-v9';
+const CACHE_NAME = 'philly-calendar-v10';
 const urlsToCache = [
     '/',
     '/static/styles.css?v=9',
