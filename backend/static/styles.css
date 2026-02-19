@@ -300,6 +300,11 @@ body {
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
+/* Override: colored-background pills need white text on hover */
+.hero-cat[data-cat]:hover {
+    color: white;
+}
+
 /* ============================================================
    MAIN LAYOUT
    ============================================================ */
