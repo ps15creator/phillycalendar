@@ -24,7 +24,7 @@
                 <p class="header-tagline">🦅 Your city. Your events. Never miss a thing.</p>
             </div>
             <nav class="header-nav">
-                <button id="bookmarksBtn" class="btn btn-secondary">⭐ Bookmarks</button>
+                <button id="profileBtn" class="btn btn-secondary" onclick="handleProfileBtn()">👤 Sign In</button>
                 <button id="refreshBtn" class="btn btn-primary">🔄 Refresh</button>
                 <button id="adminBtn" class="btn btn-secondary" onclick="handleAdminBtn()">🔑 Admin</button>
             </nav>
@@ -150,6 +150,16 @@
 
     <!-- Scroll to top -->
     <button id="scrollTopBtn" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top" aria-label="Back to top">↑</button>
+
+    <!-- ======================================================
+         PROFILE / SIGN-IN MODAL
+         ====================================================== -->
+    <div id="profileModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+            <div id="profileModalBody"></div>
+        </div>
+    </div>
 
     <!-- ======================================================
          EVENT DETAIL MODAL

@@ -125,10 +125,45 @@ class EventDatabase:
                 VALUES (1, '08:00')
             ''')
 
+        # Users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                email        TEXT UNIQUE NOT NULL,
+                display_name TEXT,
+                created_at   TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # OTP tokens table (short-lived login codes)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS otp_tokens (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                used       INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # User saves table (per-user saved events)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_saves (
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                saved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, event_id)
+            )
+        ''')
+
         # Create indexes
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_start_date ON events(start_date)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_category ON events(category)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_bookmarks_event_id ON bookmarks(event_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
 
         conn.commit()
         conn.close()
@@ -186,6 +221,42 @@ class EventDatabase:
                 push_subscription TEXT
             )
         ''')
+
+        # Users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id           SERIAL PRIMARY KEY,
+                email        TEXT UNIQUE NOT NULL,
+                display_name TEXT,
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # OTP tokens table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS otp_tokens (
+                id         SERIAL PRIMARY KEY,
+                email      TEXT NOT NULL,
+                code       TEXT NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                used       INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # User saves table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_saves (
+                id       SERIAL PRIMARY KEY,
+                user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                saved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, event_id)
+            )
+        ''')
+
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
 
         conn.commit()
         self.release_connection(conn)
@@ -619,3 +690,260 @@ class EventDatabase:
             'by_category': categories,
             'by_source': sources
         }
+
+    # ================================================================
+    # USER AUTH METHODS
+    # ================================================================
+
+    def get_or_create_user(self, email: str, display_name: str = None) -> Dict:
+        """Get existing user by email or create a new one. Returns user dict."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            if self.use_postgres:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT id, email, display_name, created_at FROM users WHERE email = {ph}',
+                    (email,)
+                )
+                row = cursor.fetchone()
+                if row:
+                    cols = [d[0] for d in cursor.description]
+                    return dict(zip(cols, row))
+                cursor.execute(
+                    'INSERT INTO users (email, display_name) VALUES (%s, %s) RETURNING id, email, display_name, created_at',
+                    (email, display_name or email.split('@')[0])
+                )
+                cols = [d[0] for d in cursor.description]
+                user = dict(zip(cols, cursor.fetchone()))
+            else:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT id, email, display_name, created_at FROM users WHERE email = {ph}',
+                    (email,)
+                )
+                row = cursor.fetchone()
+                if row:
+                    return dict(row)
+                cursor.execute(
+                    'INSERT INTO users (email, display_name) VALUES (?, ?)',
+                    (email, display_name or email.split('@')[0])
+                )
+                user_id = cursor.lastrowid
+                cursor.execute('SELECT id, email, display_name, created_at FROM users WHERE id = ?', (user_id,))
+                user = dict(cursor.fetchone())
+            conn.commit()
+            return user
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'get_or_create_user error: {e}')
+            raise
+        finally:
+            self.release_connection(conn)
+
+    def get_user_by_id(self, user_id: int) -> Optional[Dict]:
+        """Return user dict by primary key, or None."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            if self.use_postgres:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT id, email, display_name, created_at FROM users WHERE id = {ph}',
+                    (user_id,)
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return None
+                cols = [d[0] for d in cursor.description]
+                return dict(zip(cols, row))
+            else:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT id, email, display_name, created_at FROM users WHERE id = {ph}',
+                    (user_id,)
+                )
+                row = cursor.fetchone()
+                return dict(row) if row else None
+        finally:
+            self.release_connection(conn)
+
+    def update_user_display_name(self, user_id: int, display_name: str) -> bool:
+        """Update a user's display name."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                f'UPDATE users SET display_name = {ph} WHERE id = {ph}',
+                (display_name, user_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'update_user_display_name error: {e}')
+            return False
+        finally:
+            self.release_connection(conn)
+
+    # ================================================================
+    # OTP METHODS
+    # ================================================================
+
+    def create_otp(self, email: str, code: str, expires_at: str) -> None:
+        """Store an OTP code for the given email, invalidating old ones."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            cursor = conn.cursor()
+            # Invalidate any existing unused OTPs for this email
+            cursor.execute(
+                f'UPDATE otp_tokens SET used = 1 WHERE email = {ph} AND used = 0',
+                (email,)
+            )
+            cursor.execute(
+                f'INSERT INTO otp_tokens (email, code, expires_at) VALUES ({ph}, {ph}, {ph})',
+                (email, code, expires_at)
+            )
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'create_otp error: {e}')
+            raise
+        finally:
+            self.release_connection(conn)
+
+    def verify_otp(self, email: str, code: str) -> bool:
+        """Verify an OTP code. Marks it used if valid. Returns True if valid."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        now = datetime.now().isoformat()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                f'SELECT id FROM otp_tokens WHERE email = {ph} AND code = {ph} AND used = 0 AND expires_at > {ph} LIMIT 1',
+                (email, code, now)
+            )
+            row = cursor.fetchone()
+            if not row:
+                return False
+            token_id = row[0]
+            cursor.execute(f'UPDATE otp_tokens SET used = 1 WHERE id = {ph}', (token_id,))
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'verify_otp error: {e}')
+            return False
+        finally:
+            self.release_connection(conn)
+
+    def cleanup_expired_otps(self) -> int:
+        """Delete expired or used OTP tokens. Returns count deleted."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        now = datetime.now().isoformat()
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                f'DELETE FROM otp_tokens WHERE expires_at < {ph} OR used = 1',
+                (now,)
+            )
+            conn.commit()
+            count = cursor.rowcount
+            logger.info(f'Cleaned up {count} expired OTP tokens')
+            return count
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'cleanup_expired_otps error: {e}')
+            return 0
+        finally:
+            self.release_connection(conn)
+
+    # ================================================================
+    # USER SAVES METHODS
+    # ================================================================
+
+    def save_event(self, user_id: int, event_id: int) -> bool:
+        """Save an event for a user. Silently ignores duplicates."""
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            if self.use_postgres:
+                cursor.execute(
+                    'INSERT INTO user_saves (user_id, event_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+                    (user_id, event_id)
+                )
+            else:
+                cursor.execute(
+                    'INSERT OR IGNORE INTO user_saves (user_id, event_id) VALUES (?, ?)',
+                    (user_id, event_id)
+                )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'save_event error: {e}')
+            return False
+        finally:
+            self.release_connection(conn)
+
+    def unsave_event(self, user_id: int, event_id: int) -> bool:
+        """Remove a saved event for a user."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                f'DELETE FROM user_saves WHERE user_id = {ph} AND event_id = {ph}',
+                (user_id, event_id)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            conn.rollback()
+            logger.error(f'unsave_event error: {e}')
+            return False
+        finally:
+            self.release_connection(conn)
+
+    def get_user_saves(self, user_id: int) -> List[Dict]:
+        """Return full event dicts for all events saved by user_id, ordered by date."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            if self.use_postgres:
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT e.* FROM events e JOIN user_saves s ON e.id = s.event_id WHERE s.user_id = {ph} ORDER BY e.start_date ASC',
+                    (user_id,)
+                )
+                cols = [d[0] for d in cursor.description]
+                return [dict(zip(cols, row)) for row in cursor.fetchall()]
+            else:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute(
+                    f'SELECT e.* FROM events e JOIN user_saves s ON e.id = s.event_id WHERE s.user_id = {ph} ORDER BY e.start_date ASC',
+                    (user_id,)
+                )
+                return [dict(row) for row in cursor.fetchall()]
+        finally:
+            self.release_connection(conn)
+
+    def get_user_save_ids(self, user_id: int) -> List[int]:
+        """Return list of event_ids saved by user_id."""
+        conn = self.get_connection()
+        ph = '%s' if self.use_postgres else '?'
+        try:
+            cursor = conn.cursor()
+            cursor.execute(
+                f'SELECT event_id FROM user_saves WHERE user_id = {ph}',
+                (user_id,)
+            )
+            return [row[0] for row in cursor.fetchall()]
+        finally:
+            self.release_connection(conn)

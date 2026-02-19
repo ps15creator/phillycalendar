@@ -7,6 +7,8 @@ let currentCategory = 'all';
 let currentMonth = 'all';
 let currentSource = 'all';
 let bookmarkedIds = new Set(); // Track bookmarked event IDs (stored in localStorage)
+let currentUser = null;        // { id, email, display_name } when logged in, else null
+let savedEventIds = new Set(); // Server-side saved event IDs for the logged-in user
 
 // ============================================================
 // ADMIN AUTH (sessionStorage — clears when tab closes)
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBookmarks();
     renderAdminControls();
     checkForUpdates();
+    initUserSession(); // Check if user is already logged in
 });
 
 function initHeroDismiss() {
@@ -75,7 +78,6 @@ function stripHtml(str) {
 function setupEventListeners() {
     document.getElementById('searchInput').addEventListener('input', handleSearch);
     document.getElementById('refreshBtn').addEventListener('click', refreshEvents);
-    document.getElementById('bookmarksBtn').addEventListener('click', showBookmarks);
     document.getElementById('monthSelect').addEventListener('change', handleMonthFilter);
     document.getElementById('sourceSelect').addEventListener('change', handleSourceFilter);
 
@@ -111,6 +113,7 @@ function setupEventListeners() {
 
     window.addEventListener('click', (e) => {
         if (e.target.id === 'eventModal') closeModal();
+        if (e.target.id === 'profileModal') closeProfileModal();
     });
 }
 
@@ -452,9 +455,22 @@ function showEventDetail(event) {
     const categoryName = getCategoryName(event.category);
 
     const isBookmarked = bookmarkedIds.has(event.id);
+    const isSaved = currentUser ? savedEventIds.has(event.id) : false;
 
     const cleanDescription = stripHtml(event.description || '');
     const safeUrl = event.source_url ? escapeHtml(event.source_url) : '';
+
+    // Build save/bookmark button
+    let saveBtn = '';
+    if (currentUser) {
+        saveBtn = `<button class="btn ${isSaved ? 'btn-warning' : 'btn-success'}" onclick="toggleSave(${event.id})">
+            ${isSaved ? '❤️ Saved' : '🤍 Save'}
+        </button>`;
+    } else {
+        saveBtn = `<button class="btn ${isBookmarked ? 'btn-warning' : 'btn-success'}" onclick="toggleBookmark(${event.id})">
+            ${isBookmarked ? '⭐ Bookmarked' : '☆ Bookmark'}
+        </button>`;
+    }
 
     modalBody.innerHTML = `
         <h2 class="modal-title" id="eventModalTitle">${escapeHtml(event.title)}</h2>
@@ -502,9 +518,7 @@ function showEventDetail(event) {
         </div>
 
         <div class="event-detail-actions">
-            <button class="btn ${isBookmarked ? 'btn-warning' : 'btn-success'}" onclick="toggleBookmark(${event.id})">
-                ${isBookmarked ? '⭐ Bookmarked' : '☆ Bookmark'}
-            </button>
+            ${saveBtn}
             ${isAdminMode() ? `
             <button class="btn btn-primary" onclick="openEditEventModal(${event.id})">✏️ Edit</button>
             <button class="btn btn-danger" onclick="deleteEvent(${event.id})">🗑️ Delete</button>
@@ -916,6 +930,314 @@ function renderAdminControls() {
 function showBookmarkedEvent(eventId) {
     const event = allEvents.find(e => e.id === eventId);
     if (event) showEventDetail(event);
+}
+
+// ============================================================
+// USER AUTH — Email + OTP
+// ============================================================
+
+async function initUserSession() {
+    try {
+        const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.logged_in) {
+            currentUser = data.user;
+            await loadUserSaves();
+            updateProfileBtn();
+        }
+    } catch (err) {
+        // Not logged in or server error — stay anonymous
+    }
+}
+
+function handleProfileBtn() {
+    if (currentUser) {
+        showSavesModal();
+    } else {
+        showSignInModal();
+    }
+}
+
+function updateProfileBtn() {
+    const btn = document.getElementById('profileBtn');
+    if (!btn) return;
+    if (currentUser) {
+        const label = currentUser.display_name
+            ? currentUser.display_name.split(' ')[0]
+            : currentUser.email.split('@')[0];
+        btn.textContent = `👤 ${label}`;
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+    } else {
+        btn.textContent = '👤 Sign In';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+    }
+}
+
+function showSignInModal() {
+    const modal = document.getElementById('profileModal');
+    const body = document.getElementById('profileModalBody');
+    body.innerHTML = `
+        <h2 class="modal-title">👤 Sign In</h2>
+        <p style="color:#666; margin-bottom:20px;">Enter your email to receive a one-time login code.</p>
+        <div id="otpStep1">
+            <div class="form-group">
+                <label for="otpEmail">Email Address</label>
+                <input type="email" id="otpEmail" placeholder="you@example.com" style="width:100%;">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="sendOtp()">📧 Send Code</button>
+            </div>
+        </div>
+        <div id="otpStep2" style="display:none;">
+            <p style="color:#10b981; font-weight:600; margin-bottom:16px;">✅ Code sent! Check your inbox.</p>
+            <div class="form-group">
+                <label for="otpCode">6-Digit Code</label>
+                <input type="text" id="otpCode" placeholder="123456" maxlength="6"
+                    style="width:100%; font-size:1.4em; letter-spacing:0.2em; text-align:center;"
+                    oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="verifyOtp()">✅ Verify Code</button>
+                <button class="btn btn-secondary" onclick="sendOtp(true)">↩ Resend</button>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'block';
+}
+
+async function sendOtp(resend = false) {
+    const emailEl = document.getElementById('otpEmail');
+    const email = emailEl ? emailEl.value.trim() : '';
+    if (!email || !email.includes('@')) {
+        showToast('Please enter a valid email address.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('otpStep1').style.display = 'none';
+            document.getElementById('otpStep2').style.display = 'block';
+            if (resend) showToast('New code sent!', 'success');
+        } else {
+            showToast(data.error || 'Could not send code. Try again.', 'error');
+        }
+    } catch (err) {
+        showToast('Could not connect to server.', 'error');
+    }
+}
+
+async function verifyOtp() {
+    const emailEl = document.getElementById('otpEmail');
+    const codeEl = document.getElementById('otpCode');
+    const email = emailEl ? emailEl.value.trim() : '';
+    const code = codeEl ? codeEl.value.trim() : '';
+
+    if (!code || code.length !== 6) {
+        showToast('Please enter the 6-digit code.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, code })
+        });
+        const data = await res.json();
+        if (data.success) {
+            await onLoginSuccess(data.user);
+        } else {
+            showToast(data.error || 'Invalid or expired code.', 'error');
+        }
+    } catch (err) {
+        showToast('Could not connect to server.', 'error');
+    }
+}
+
+async function onLoginSuccess(user) {
+    currentUser = user;
+    closeProfileModal();
+
+    // Migrate any existing localStorage bookmarks to server saves
+    if (bookmarkedIds.size > 0) {
+        const ids = [...bookmarkedIds];
+        for (const eventId of ids) {
+            try {
+                await fetch(`${API_BASE}/profile/saves`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ event_id: eventId })
+                });
+            } catch (_) {}
+        }
+        // Clear localStorage bookmarks after migration
+        bookmarkedIds = new Set();
+        saveBookmarks();
+    }
+
+    await loadUserSaves();
+    updateProfileBtn();
+
+    const firstName = user.display_name
+        ? user.display_name.split(' ')[0]
+        : user.email.split('@')[0];
+    showToast(`Welcome, ${firstName}! 🎉`, 'success');
+}
+
+async function logoutUser() {
+    try {
+        await fetch(`${API_BASE}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (_) {}
+    currentUser = null;
+    savedEventIds = new Set();
+    updateProfileBtn();
+    closeProfileModal();
+    showToast('Signed out.', 'success');
+}
+
+// ============================================================
+// USER SAVES (server-side)
+// ============================================================
+
+async function loadUserSaves() {
+    if (!currentUser) return;
+    try {
+        const res = await fetch(`${API_BASE}/profile/saves`, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+            savedEventIds = new Set(data.event_ids);
+        }
+    } catch (err) {
+        console.error('Could not load saved events:', err);
+    }
+}
+
+async function toggleSave(eventId) {
+    if (!currentUser) {
+        // Not logged in — fall back to bookmark
+        toggleBookmark(eventId);
+        return;
+    }
+
+    const isSaved = savedEventIds.has(eventId);
+    try {
+        if (isSaved) {
+            const res = await fetch(`${API_BASE}/profile/saves/${eventId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (data.success) {
+                savedEventIds.delete(eventId);
+                showToast('Removed from saves.', 'success');
+            }
+        } else {
+            const res = await fetch(`${API_BASE}/profile/saves`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ event_id: eventId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                savedEventIds.add(eventId);
+                showToast('Event saved! ❤️', 'success');
+            }
+        }
+    } catch (err) {
+        showToast('Could not update saves. Try again.', 'error');
+        return;
+    }
+
+    // Refresh modal to reflect updated state
+    const event = allEvents.find(e => e.id === eventId);
+    if (event) showEventDetail(event);
+}
+
+// ============================================================
+// PROFILE / SAVES MODAL
+// ============================================================
+
+function showSavesModal() {
+    const modal = document.getElementById('profileModal');
+    const body = document.getElementById('profileModalBody');
+
+    if (!currentUser) {
+        showSignInModal();
+        return;
+    }
+
+    const initial = (currentUser.display_name || currentUser.email)[0].toUpperCase();
+    const displayEmail = escapeHtml(currentUser.email);
+    const displayName = escapeHtml(currentUser.display_name || currentUser.email.split('@')[0]);
+
+    // Get saved events from allEvents
+    const savedEvents = allEvents.filter(e => savedEventIds.has(e.id));
+
+    let eventsHtml = '';
+    if (savedEvents.length === 0) {
+        eventsHtml = `
+            <div style="text-align:center; padding:30px 0; color:#666;">
+                <p style="font-size:2em; margin-bottom:12px;">🤍</p>
+                <p style="font-weight:600; color:#333; margin-bottom:8px;">No saved events yet</p>
+                <p>Open any event and tap <strong>🤍 Save</strong> to save it here.</p>
+            </div>`;
+    } else {
+        eventsHtml = savedEvents.map(event => {
+            const date = parseLocalDate(event.start_date);
+            const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            return `
+                <div class="bookmark-row" onclick="openSavedEvent(${event.id})" style="cursor:pointer; position:relative;">
+                    <div class="bookmark-title">${escapeHtml(event.title)}</div>
+                    <div class="bookmark-date">📅 ${escapeHtml(dateStr)}</div>
+                    <div class="bookmark-loc">📍 ${escapeHtml(event.location || '')}</div>
+                    <button class="btn btn-danger" style="position:absolute; right:0; top:50%; transform:translateY(-50%); padding:4px 10px; font-size:12px;"
+                        onclick="event.stopPropagation(); toggleSave(${event.id}); showSavesModal();">✕</button>
+                </div>`;
+        }).join('');
+    }
+
+    body.innerHTML = `
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+            <div style="width:48px; height:48px; border-radius:50%; background:#004C54; color:#FFB612;
+                        display:flex; align-items:center; justify-content:center; font-size:1.5em; font-weight:700;">
+                ${initial}
+            </div>
+            <div>
+                <div style="font-weight:700; font-size:1.05em;">${displayName}</div>
+                <div style="color:#666; font-size:0.9em;">${displayEmail}</div>
+            </div>
+            <button class="btn btn-secondary" style="margin-left:auto; font-size:13px;"
+                onclick="logoutUser()">Sign Out</button>
+        </div>
+        <h3 style="margin-bottom:14px; font-size:1em; color:#333;">❤️ Saved Events (${savedEvents.length})</h3>
+        <div class="bookmarks-list">${eventsHtml}</div>
+    `;
+    modal.style.display = 'block';
+}
+
+function openSavedEvent(eventId) {
+    closeProfileModal();
+    const event = allEvents.find(e => e.id === eventId);
+    if (event) showEventDetail(event);
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
 }
 
 // ============================================================

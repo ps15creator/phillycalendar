@@ -15,3 +15,15 @@ services:
         sync: false
       - key: SCRAPE_TOKEN
         sync: false
+      - key: FLASK_SECRET_KEY
+        sync: false
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USER
+        sync: false
+      - key: MAIL_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false

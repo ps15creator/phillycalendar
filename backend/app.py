@@ -3,7 +3,7 @@ Flask API for Philadelphia Calendar
 Serves scraped events to iOS app
 """
 
-from flask import Flask, jsonify, request, send_from_directory, render_template
+from flask import Flask, jsonify, request, send_from_directory, render_template, session
 from flask_cors import CORS
 from database import EventDatabase
 from scrapers import SCRAPERS
@@ -51,7 +51,13 @@ _ALLOWED_ORIGINS = os.environ.get(
     'ALLOWED_ORIGINS',
     'https://phillycalendar.onrender.com'
 ).split(',')
-CORS(app, origins=_ALLOWED_ORIGINS, supports_credentials=False)
+CORS(app, origins=_ALLOWED_ORIGINS, supports_credentials=True)
+
+# Session config — required for OTP user auth
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'philly-dev-secret-change-in-prod')
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('RENDER_EXTERNAL_URL', '').startswith('https')
 
 app.after_request(add_security_headers)
 
@@ -62,6 +68,84 @@ if use_cloud:
     logger.info("Using cloud PostgreSQL database")
 else:
     logger.info("Using local SQLite database (set DATABASE_URL to use cloud)")
+
+
+# ================================================================
+# AUTH HELPERS
+# ================================================================
+
+def get_current_user():
+    """Return user dict from session, or None if not logged in."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return None
+    return db.get_user_by_id(user_id)
+
+
+def require_login(f):
+    """Decorator: returns 401 if user is not logged in via session."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user_id'):
+            return jsonify({'success': False, 'error': 'Not logged in'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+
+def send_otp_email(to_email: str, code: str) -> bool:
+    """Send a 6-digit OTP code to the given email via SMTP. Returns True on success."""
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    host     = os.environ.get('MAIL_HOST', 'smtp.gmail.com')
+    port     = int(os.environ.get('MAIL_PORT', '587'))
+    user     = os.environ.get('MAIL_USER', '')
+    password = os.environ.get('MAIL_PASS', '')
+    from_addr = os.environ.get('MAIL_FROM', user)
+
+    if not user or not password:
+        logger.warning('MAIL_USER / MAIL_PASS not configured — OTP email not sent')
+        return False
+
+    plain = (
+        f"Hi there!\n\n"
+        f"Your Philly Events Calendar login code is:\n\n"
+        f"    {code}\n\n"
+        f"This code expires in 10 minutes. If you didn't request this, ignore this email.\n\n"
+        f"— Philly Events Calendar\nhttps://phillycalendar.onrender.com"
+    )
+    html = f"""
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
+      <h2 style="color:#004C54;">&#x1F514; Philly Events Calendar</h2>
+      <p style="color:#333;">Your one-time login code:</p>
+      <div style="font-size:38px;font-weight:900;letter-spacing:10px;color:#004C54;
+                  background:#e6f4f5;padding:20px;border-radius:12px;text-align:center;
+                  margin:20px 0;">{code}</div>
+      <p style="color:#888;font-size:13px;">Expires in 10 minutes.<br>
+         If you didn't request this, you can safely ignore this email.</p>
+    </div>
+    """
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = f"{code} — Your Philly Events login code"
+    msg['From']    = f"Philly Events Calendar <{from_addr}>"
+    msg['To']      = to_email
+    msg.attach(MIMEText(plain, 'plain'))
+    msg.attach(MIMEText(html,  'html'))
+
+    try:
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP(host, port) as smtp:
+            smtp.ehlo()
+            smtp.starttls(context=ctx)
+            smtp.login(user, password)
+            smtp.sendmail(from_addr, to_email, msg.as_string())
+        logger.info(f'OTP email sent to {to_email}')
+        return True
+    except Exception as e:
+        logger.error(f'Failed to send OTP email to {to_email}: {e}')
+        return False
 
 
 def _start_scheduler():
@@ -87,6 +171,15 @@ def _start_scheduler():
         trigger=CronTrigger(hour=3, minute=0),
         id='cleanup_old_events',
         name='Cleanup Old Events',
+        replace_existing=True
+    )
+
+    # Cleanup expired OTP tokens nightly at 3:30 AM
+    scheduler.add_job(
+        func=db.cleanup_expired_otps,
+        trigger=CronTrigger(hour=3, minute=30),
+        id='cleanup_otps',
+        name='Cleanup Expired OTPs',
         replace_existing=True
     )
 
@@ -435,6 +528,156 @@ def notification_settings():
     except Exception as e:
         logger.error(f"Error with notification settings: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ================================================================
+# AUTH ROUTES — Email + OTP
+# ================================================================
+
+@app.route('/auth/send-otp', methods=['POST'])
+def send_otp():
+    """Step 1: Send a 6-digit OTP to the given email address."""
+    import random
+    import re
+    from datetime import timedelta
+
+    data  = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+
+    if not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+        return jsonify({'success': False, 'error': 'Invalid email address'}), 400
+
+    code       = f"{random.randint(0, 999999):06d}"
+    expires_at = (datetime.now() + timedelta(minutes=10)).isoformat()
+
+    try:
+        db.create_otp(email, code, expires_at)
+    except Exception as e:
+        logger.error(f'create_otp failed: {e}')
+        return jsonify({'success': False, 'error': 'Could not create OTP'}), 500
+
+    sent = send_otp_email(email, code)
+    if not sent:
+        # Dev fallback: log the code so it's testable without email configured
+        logger.info(f'[DEV] OTP for {email}: {code}')
+
+    return jsonify({'success': True, 'message': 'Code sent! Check your email.'})
+
+
+@app.route('/auth/verify-otp', methods=['POST'])
+def verify_otp():
+    """Step 2: Verify the OTP and create a session."""
+    data  = request.get_json() or {}
+    email = (data.get('email') or '').strip().lower()
+    code  = (data.get('code')  or '').strip()
+
+    if not email or not code:
+        return jsonify({'success': False, 'error': 'Email and code are required'}), 400
+
+    if not db.verify_otp(email, code):
+        return jsonify({'success': False, 'error': 'Invalid or expired code. Please try again.'}), 401
+
+    try:
+        user = db.get_or_create_user(email)
+    except Exception as e:
+        logger.error(f'get_or_create_user failed: {e}')
+        return jsonify({'success': False, 'error': 'Could not create user'}), 500
+
+    session['user_id'] = user['id']
+    session.permanent  = False  # Expires when browser closes
+
+    return jsonify({
+        'success': True,
+        'user': {
+            'id':           user['id'],
+            'email':        user['email'],
+            'display_name': user.get('display_name') or user['email'].split('@')[0],
+        }
+    })
+
+
+@app.route('/auth/logout', methods=['POST'])
+def logout():
+    """Log out the current user."""
+    session.clear()
+    return jsonify({'success': True})
+
+
+@app.route('/auth/me', methods=['GET'])
+def auth_me():
+    """Return current user info, or logged_in: false."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'logged_in': False})
+    user = db.get_user_by_id(user_id)
+    if not user:
+        session.clear()
+        return jsonify({'logged_in': False})
+    return jsonify({
+        'logged_in': True,
+        'user': {
+            'id':           user['id'],
+            'email':        user['email'],
+            'display_name': user.get('display_name') or user['email'].split('@')[0],
+        }
+    })
+
+
+# ================================================================
+# PROFILE / SAVES ROUTES
+# ================================================================
+
+@app.route('/profile/saves', methods=['GET'])
+def get_saves():
+    """Get all saved events for the logged-in user."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    try:
+        events   = db.get_user_saves(user_id)
+        event_ids = db.get_user_save_ids(user_id)
+        return jsonify({'success': True, 'events': events, 'event_ids': event_ids})
+    except Exception as e:
+        logger.error(f'get_saves error: {e}')
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/profile/saves', methods=['POST'])
+def add_save():
+    """Save an event for the logged-in user."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    data     = request.get_json() or {}
+    event_id = data.get('event_id')
+    if not event_id:
+        return jsonify({'success': False, 'error': 'event_id required'}), 400
+    success = db.save_event(user_id, int(event_id))
+    return jsonify({'success': success})
+
+
+@app.route('/profile/saves/<int:event_id>', methods=['DELETE'])
+def remove_save(event_id):
+    """Unsave an event for the logged-in user."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    success = db.unsave_event(user_id, event_id)
+    return jsonify({'success': success})
+
+
+@app.route('/profile/me', methods=['PATCH'])
+def update_profile():
+    """Update display name for the logged-in user."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    data         = request.get_json() or {}
+    display_name = (data.get('display_name') or '').strip()
+    if not display_name:
+        return jsonify({'success': False, 'error': 'display_name required'}), 400
+    success = db.update_user_display_name(user_id, display_name)
+    return jsonify({'success': success})
 
 
 # Start scheduler after all functions are defined
