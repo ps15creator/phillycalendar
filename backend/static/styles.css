@@ -73,7 +73,7 @@ body {
 
 .header-brand {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 12px;
 }
 
@@ -83,13 +83,18 @@ body {
 }
 
 .header-bell-img {
-    width: 44px;
+    width: 132px;
     height: auto;
     border-radius: 0;
     object-fit: contain;
     flex-shrink: 0;
     border: none;
     display: block;
+    mix-blend-mode: luminosity;
+    filter: brightness(1.15) contrast(0.85) saturate(0.6);
+    opacity: 0.92;
+    align-self: flex-end;
+    margin-bottom: -14px; /* bleeds slightly below header inner to merge visually */
 }
 
 .header-brand h1 {
