@@ -1767,6 +1767,8 @@ body {
         -webkit-box-orient: unset;
         line-height: 1.35;
         flex: 1 1 100%;
+        text-align: justify;
+        text-align-last: left;
     }
     .event-category {
         font-size: 11px;
