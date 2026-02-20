@@ -871,57 +871,60 @@ body {
     overflow: hidden;
     box-shadow: var(--card-shadow);
     border: 1px solid var(--border);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.day-group:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--card-shadow-hover);
-}
-
+/* Day header — clean flat style like v0 */
 .day-header {
-    background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 50%, #003a42 100%);
+    background: var(--green);
     color: white;
-    padding: 16px 24px;
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: none;
 }
 
 .day-header.today {
-    background: linear-gradient(135deg, var(--red) 0%, var(--green-mid) 100%);
+    background: var(--red);
 }
 
-.day-header-left { display: flex; flex-direction: column; }
+.day-header-left {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+}
 
 .day-weekday {
     font-weight: 800;
-    font-size: 1.05em;
-    letter-spacing: 0.02em;
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 .day-date {
     font-size: 0.82em;
-    opacity: 0.88;
-    margin-top: 2px;
+    opacity: 0.78;
+    font-weight: 400;
 }
 
 .day-count {
-    background: rgba(255,255,255,0.22);
-    padding: 5px 14px;
+    background: rgba(255,255,255,0.2);
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: 0.8em;
+    font-size: 0.75em;
     font-weight: 700;
 }
 
+/* Event row — v0 inspired: time | title + badge | location + price | chevron */
 .event-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0;
-    padding: 18px 24px;
-    border-bottom: 1px solid var(--bg);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    transition: background 0.15s;
     color: inherit;
     text-decoration: none;
     position: relative;
@@ -930,38 +933,28 @@ body {
 .event-row:last-child { border-bottom: none; }
 
 .event-row:hover {
-    background: linear-gradient(90deg, var(--green-light) 0%, rgba(255,255,255,0.5) 100%);
+    background: var(--green-light);
 }
 
-.event-row:hover .chevron { color: var(--green); transform: translateX(4px); }
 .event-row:hover .event-row-title { color: var(--green); }
+.event-row:hover .chevron { color: var(--green); transform: translateX(3px); }
 
-.event-row::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background: var(--green);
-    transition: width 0.2s ease;
-}
-.event-row:hover::before { width: 4px; }
-
+/* Time column — fixed width, right-aligned */
 .event-time-col {
     flex-shrink: 0;
-    width: 76px;
-    padding-top: 2px;
+    width: 72px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    padding-right: 16px;
 }
 
 .event-time {
-    font-size: 0.88em;
-    font-weight: 800;
-    color: var(--green);
+    font-size: 0.82em;
+    font-weight: 700;
+    color: var(--text-mid);
     line-height: 1.2;
+    white-space: nowrap;
 }
 
 .event-time-tbd {
@@ -972,74 +965,87 @@ body {
     white-space: nowrap;
 }
 
-.event-row-divider {
-    width: 2px;
-    background: linear-gradient(to bottom, var(--green), transparent);
-    align-self: stretch;
-    margin-right: 18px;
-    flex-shrink: 0;
-    opacity: 0.2;
-}
+/* No divider — cleaner like v0 */
+.event-row-divider { display: none; }
 
-.event-row:hover .event-row-divider { opacity: 0.5; }
-
+/* Details column — takes all remaining space */
 .event-details-col {
     flex: 1;
     min-width: 0;
 }
 
+/* Title row: name + badge side by side */
 .event-row-top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 6px;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-wrap: nowrap;
 }
 
 .event-row-title {
-    font-weight: 700;
-    font-size: 1.02em;
+    font-weight: 600;
+    font-size: 0.97em;
     color: var(--text);
-    line-height: 1.35;
-    flex: 1;
+    line-height: 1.3;
     transition: color 0.15s;
+    /* Let title take available space, truncate if too long */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
+/* Badge — smaller, pill style, right after title */
 .event-category {
     display: inline-flex;
     align-items: center;
-    padding: 4px 11px;
+    padding: 3px 9px;
     border-radius: 20px;
-    font-size: 0.7em;
+    font-size: 0.68em;
     font-weight: 700;
     white-space: nowrap;
     flex-shrink: 0;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
 }
 
+/* Meta row: location · price — clean single line */
 .event-row-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    font-size: 0.84em;
+    align-items: center;
+    gap: 6px 14px;
+    font-size: 0.8em;
     color: var(--text-light);
-    margin-top: 4px;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
-.event-row-location,
+.event-row-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
 .event-row-price {
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
+/* Chevron — right side indicator */
 .chevron {
     flex-shrink: 0;
     color: var(--border);
-    font-size: 1.2em;
+    font-size: 1.1em;
     align-self: center;
-    margin-left: 8px;
+    margin-left: 10px;
     transition: color 0.15s, transform 0.15s;
 }
 
@@ -1518,41 +1524,32 @@ body {
     .source-select { font-size: 13px; }
 
     /* --- EVENT ROWS --- */
-    .day-header { padding: 12px 16px; }
-    .day-weekday { font-size: 0.95em; }
+    .day-header { padding: 8px 14px; }
+    .day-weekday { font-size: 0.72em; }
     .day-date { font-size: 0.78em; }
-    .day-count { font-size: 0.75em; padding: 4px 10px; }
+    .day-count { font-size: 0.72em; padding: 3px 8px; }
 
-    .event-row { padding: 12px 14px; gap: 0; }
-    .event-time-col { width: 58px; }
-    .event-time { font-size: 0.8em; }
-    .event-time-tbd { font-size: 0.68em; }
-    .event-row-divider { margin-right: 12px; }
+    .event-row { padding: 11px 14px; align-items: center; }
+    .event-time-col { width: 62px; padding-right: 12px; }
+    .event-time { font-size: 0.78em; }
+    .event-time-tbd { font-size: 0.66em; }
 
     .event-row-top {
-        flex-wrap: nowrap;
         gap: 6px;
-        margin-bottom: 4px;
-        align-items: flex-start;
+        margin-bottom: 3px;
+        align-items: center;
     }
     .event-row-title {
         font-size: 0.88em;
-        flex: 1 1 auto;
-        min-width: 0;
-        /* allow title to take most of the space, wrapping naturally */
-        word-break: break-word;
+        -webkit-line-clamp: 2;
     }
     .event-category {
-        font-size: 0.58em;
-        padding: 2px 6px;
-        flex-shrink: 0;
-        white-space: nowrap;
-        border-left: none;
-        margin-top: 2px;
+        font-size: 0.6em;
+        padding: 2px 7px;
     }
     .event-row-meta {
-        font-size: 0.76em;
-        gap: 4px 10px;
+        font-size: 0.74em;
+        gap: 4px 8px;
     }
     .chevron { display: none; }
 
