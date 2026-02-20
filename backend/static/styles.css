@@ -1,5 +1,5 @@
 /* ============================================================
-   PHILLY EVENTS CALENDAR — UI/UX Refresh
+   PHILLY EVENTS CALENDAR — UI/UX Refresh  v27
    Eagles Midnight Green : #004C54
    Phillies Red          : #E81828
    Phillies Navy         : #002D72
@@ -281,6 +281,25 @@ body {
 /* ============================================================
    PHILLY LANDMARKS SECTION
    ============================================================ */
+
+/* Event count badge on landmark cards */
+.landmark-event-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    flex-shrink: 0;
+    align-self: flex-end;
+}
+
 .landmarks-section {
     background: var(--bg);
     border-bottom: 1px solid var(--border);
@@ -1028,6 +1047,12 @@ body {
     overflow: hidden;
 }
 
+/* Dot separator between location and price — hidden on mobile */
+.meta-dot {
+    color: var(--border);
+    flex-shrink: 0;
+}
+
 .event-row-location {
     display: flex;
     align-items: center;
@@ -1405,25 +1430,82 @@ body {
 }
 
 /* ============================================================
+   HAMBURGER MENU — hidden by default, visible on mobile only
+   ============================================================ */
+.hamburger-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.45);
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.18s, border-color 0.18s;
+    font-family: var(--font);
+}
+.hamburger-menu-btn:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.7);
+}
+
+/* Mobile nav drawer — slides down from header */
+.mobile-nav-drawer {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    background: var(--green-dark);
+    border-top: 1px solid rgba(255,255,255,0.12);
+}
+.mobile-nav-drawer.open {
+    display: flex;
+}
+.mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    color: white;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: var(--font);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s;
+}
+.mobile-nav-item:last-child { border-bottom: none; }
+.mobile-nav-item:hover { background: rgba(255,255,255,0.08); }
+.mobile-nav-item.admin {
+    color: var(--gold);
+}
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 700px) {
 
     /* --- HEADER --- */
     .header-inner {
-        padding: 8px 12px;
-        gap: 6px;
+        padding: 8px 14px;
+        gap: 8px;
     }
     .header-bell-img {
-        width: 34px;
+        width: 32px;
     }
     .header-brand {
-        gap: 6px;
+        gap: 8px;
         flex: 1;
         min-width: 0;
     }
     .header-brand h1 {
-        font-size: 0.92em;
+        font-size: 0.9em;
         letter-spacing: -0.01em;
         white-space: nowrap;
     }
@@ -1431,77 +1513,86 @@ body {
     .header-tagline {
         display: none;
     }
+    /* Hide desktop nav buttons on mobile — replaced by hamburger */
     .header-nav {
-        gap: 5px;
-        flex-shrink: 0;
+        display: none;
     }
-    /* Nav buttons: icon only on mobile, no text */
-    .btn-outline-nav {
-        padding: 7px 9px;
-        font-size: 0;        /* hides text */
-        gap: 0;
-        line-height: 1;
-    }
-    .btn-outline-nav svg {
-        width: 16px;
-        height: 16px;
-    }
-    .btn-admin {
-        padding: 7px 10px;
-        font-size: 0.72em;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
+    /* Show hamburger button on mobile */
+    .hamburger-menu-btn {
+        display: flex;
     }
 
     /* --- HERO --- */
-    .hero-banner { min-height: 320px; }
-    .hero-content { padding: 32px 16px 28px; }
+    .hero-banner { min-height: 240px; }
+    .hero-content { padding: 28px 16px 24px; }
     .hero-banner h2 {
-        font-size: 1.9em;
-        margin-bottom: 12px;
+        font-size: 1.75em;
+        margin-bottom: 10px;
     }
     .hero-tagline {
-        font-size: 0.88em;
-        line-height: 1.55;
-        margin-bottom: 8px;
+        font-size: 0.85em;
+        line-height: 1.5;
+        margin-bottom: 6px;
     }
-    .hero-sub { font-size: 0.78em; margin-bottom: 18px; }
-    .hero-cats { gap: 8px; }
+    .hero-sub { font-size: 0.75em; margin-bottom: 16px; }
+    .hero-eyebrow { font-size: 0.78em; margin-bottom: 12px; }
+    .hero-cats { gap: 7px; }
     .hero-cat {
-        padding: 8px 14px;
-        font-size: 0.82em;
+        padding: 7px 12px;
+        font-size: 0.8em;
         gap: 5px;
     }
 
     /* --- PAGE WRAPPER --- */
-    .page-wrapper { padding: 20px 12px 56px; }
+    .page-wrapper { padding: 16px 12px 56px; }
 
     /* --- LANDMARKS --- */
-    .landmarks-section { padding: 24px 0 20px; }
+    .landmarks-section { padding: 20px 0 18px; }
     .landmarks-inner { padding: 0 12px; }
-    .landmarks-header { margin-bottom: 14px; }
+    .landmarks-header { margin-bottom: 12px; }
     .landmarks-title { font-size: 1.05em; }
-    .landmarks-subtitle { font-size: 0.78em; }
+    .landmarks-subtitle { font-size: 0.75em; }
     .landmarks-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    .landmark-title { font-size: 0.88em; }
-    .landmark-sub { font-size: 0.74em; }
-    .events-section-title { font-size: 1.1em; margin-bottom: 14px; }
+    .landmark-title { font-size: 0.85em; }
+    .landmark-sub { font-size: 0.72em; }
+    .landmark-event-badge { font-size: 0.68em; padding: 3px 7px; }
+    .events-section-title { font-size: 1.1em; margin-bottom: 12px; }
 
-    /* --- NEIGHBORHOOD STRIP --- */
-    .neighborhood-strip-inner { padding: 12px 14px; }
-    .neighborhood-strip-label { font-size: 0.65em; margin-bottom: 10px; }
+    /* --- NEIGHBORHOOD STRIP — static scroll on mobile (no marquee) --- */
+    .neighborhood-strip-inner { padding: 10px 12px; }
+    .neighborhood-strip-label { font-size: 0.62em; margin-bottom: 8px; }
+    /* Stop marquee animation on mobile — static horizontal scroll instead */
+    .neighborhood-pills-track {
+        animation: none;
+        flex-wrap: nowrap;
+        width: auto;
+    }
+    .neighborhood-pills-scroll {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    .neighborhood-pills-scroll::-webkit-scrollbar { display: none; }
+    /* Hide the duplicated pills (used for marquee loop) on mobile */
+    .nbhd-pill[aria-hidden="true"] { display: none; }
+    .nbhd-pill {
+        padding: 6px 14px;
+        font-size: 0.82em;
+    }
 
     /* --- CONTROLS PANEL --- */
-    .controls-panel { padding: 14px; margin: 0 0 14px; border-radius: 12px; }
+    .controls-panel { padding: 12px; margin: 0 0 14px; border-radius: 12px; }
     .events-container { padding: 0; gap: 14px; }
     .active-filters-bar { margin: 0 0 10px; }
     .empty-state { margin: 0; }
     /* Day groups fill full width inside the container */
     .day-group { border-radius: 12px; }
-    .search-bar-wrap { margin-bottom: 12px; }
+    .search-bar-wrap { margin-bottom: 10px; }
     .search-bar-wrap input { padding: 11px 16px 11px 40px; font-size: 14px; }
     .search-icon { left: 12px; }
 
@@ -1512,11 +1603,11 @@ body {
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         gap: 6px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
     .filter-row::-webkit-scrollbar { display: none; }
     .filter-btn {
-        padding: 7px 13px;
+        padding: 7px 12px;
         font-size: 12px;
         gap: 4px;
     }
@@ -1534,33 +1625,57 @@ body {
     .month-select,
     .source-select { font-size: 13px; }
 
-    /* --- EVENT ROWS --- */
+    /* --- EVENT ROWS — v0 mobile style --- */
     .day-header { padding: 8px 14px; }
     .day-weekday { font-size: 0.72em; }
     .day-date { font-size: 0.78em; }
-    .day-count { font-size: 0.72em; padding: 3px 8px; }
+    .day-count { font-size: 0.7em; padding: 2px 8px; }
 
-    .event-row { padding: 11px 14px; align-items: center; }
-    .event-time-col { width: 62px; padding-right: 12px; }
-    .event-time { font-size: 0.78em; }
-    .event-time-tbd { font-size: 0.66em; }
+    .event-row { padding: 11px 14px; align-items: flex-start; }
+    .event-time-col {
+        width: 58px;
+        padding-right: 10px;
+        padding-top: 2px;
+    }
+    .event-time { font-size: 0.76em; }
+    .event-time-tbd { font-size: 0.65em; }
 
     .event-row-top {
         gap: 6px;
-        margin-bottom: 3px;
-        align-items: center;
+        margin-bottom: 4px;
+        align-items: flex-start;
+        flex-wrap: wrap;
     }
     .event-row-title {
         font-size: 0.88em;
         -webkit-line-clamp: 2;
+        flex: 1 1 100%;  /* title takes full width, badge wraps below */
     }
     .event-category {
         font-size: 0.6em;
         padding: 2px 7px;
+        flex-shrink: 0;
     }
+    /* Mobile meta: stack location and price on separate lines */
     .event-row-meta {
-        font-size: 0.74em;
-        gap: 4px 8px;
+        font-size: 0.73em;
+        flex-direction: column;
+        gap: 3px;
+        align-items: flex-start;
+    }
+    .event-row-location {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+    .event-row-price {
+        color: var(--green);
+        font-weight: 600;
+    }
+    /* Hide dot separator between location and price on mobile */
+    .meta-dot {
+        display: none;
     }
     .chevron { display: none; }
 

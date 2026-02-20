@@ -134,6 +134,56 @@ function setupEventListeners() {
         if (e.target.id === 'eventModal') closeModal();
         if (e.target.id === 'profileModal') closeProfileModal();
     });
+
+    // --- HAMBURGER MENU ---
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+    if (hamburgerBtn && mobileNavDrawer) {
+        hamburgerBtn.addEventListener('click', toggleMobileNav);
+    }
+    // Mobile refresh button in drawer
+    const mobileRefreshBtn = document.getElementById('mobileRefreshBtn');
+    if (mobileRefreshBtn) {
+        mobileRefreshBtn.addEventListener('click', () => {
+            closeMobileNav();
+            refreshEvents();
+        });
+    }
+    // Close drawer if user taps outside of it
+    document.addEventListener('click', (e) => {
+        if (mobileNavDrawer && mobileNavDrawer.classList.contains('open')) {
+            if (!mobileNavDrawer.contains(e.target) && e.target !== hamburgerBtn && !hamburgerBtn.contains(e.target)) {
+                closeMobileNav();
+            }
+        }
+    });
+}
+
+function toggleMobileNav() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const btn = document.getElementById('hamburgerBtn');
+    if (!drawer || !btn) return;
+    const isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+        closeMobileNav();
+    } else {
+        drawer.classList.add('open');
+        drawer.setAttribute('aria-hidden', 'false');
+        btn.setAttribute('aria-expanded', 'true');
+        // Swap to X icon
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+    }
+}
+
+function closeMobileNav() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const btn = document.getElementById('hamburgerBtn');
+    if (!drawer || !btn) return;
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
+    // Restore hamburger icon
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 }
 
 // Load events from API
@@ -161,6 +211,8 @@ async function loadEvents() {
             if (heroCount && allEvents.length > 0) {
                 heroCount.textContent = `${allEvents.length} upcoming events in Philadelphia`;
             }
+            // Update landmark event count badges
+            updateLandmarkBadges();
         }
     } catch (error) {
         console.error('Error loading events:', error);
@@ -178,6 +230,35 @@ async function loadEvents() {
 async function refreshEvents() {
     await loadEvents();
     showNotification('Events refreshed!');
+}
+
+// Update the event count badges on the landmark cards
+function updateLandmarkBadges() {
+    if (!allEvents || !allEvents.length) return;
+
+    // Count events per neighborhood group using NEIGHBORHOOD_KEYWORDS
+    function countForNeighborhood(neighborhood) {
+        const keywords = NEIGHBORHOOD_KEYWORDS[neighborhood] || [neighborhood.toLowerCase()];
+        return allEvents.filter(ev => {
+            const loc = (ev.location || '').toLowerCase();
+            return keywords.some(kw => loc.includes(kw));
+        }).length;
+    }
+
+    const fairmountCount = countForNeighborhood('Fairmount Park');
+    const oldCityCount   = countForNeighborhood('Old City');
+    const rittenhouseCount = countForNeighborhood('Rittenhouse');
+
+    // Rocky Statue & Art Museum both filter by Fairmount Park
+    const badgeFairmount = document.getElementById('badgeFairmount');
+    const badgeArtMuseum = document.getElementById('badgeArtMuseum');
+    const badgeOldCity   = document.getElementById('badgeOldCity');
+    const badgeRittenhouse = document.getElementById('badgeRittenhouse');
+
+    if (badgeFairmount) badgeFairmount.textContent = fairmountCount ? `${fairmountCount} events` : 'Explore';
+    if (badgeArtMuseum) badgeArtMuseum.textContent = fairmountCount ? `${fairmountCount} events` : 'Explore';
+    if (badgeOldCity)   badgeOldCity.textContent   = oldCityCount   ? `${oldCityCount} events`   : 'Explore';
+    if (badgeRittenhouse) badgeRittenhouse.textContent = rittenhouseCount ? `${rittenhouseCount} events` : 'Explore';
 }
 
 // Scrape new events
@@ -582,7 +663,7 @@ function createEventRow(event, index) {
             </div>
             <div class="event-row-meta">
                 ${location ? `<span class="event-row-location">${pinIcon} ${escapeHtml(location)}</span>` : ''}
-                ${location && price ? `<span style="color:var(--border)">·</span>` : ''}
+                ${location && price ? `<span class="meta-dot">·</span>` : ''}
                 ${price ? `<span class="event-row-price">${dollarIcon} ${escapeHtml(price)}</span>` : ''}
             </div>
         </div>

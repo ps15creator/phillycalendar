@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Philly Events — Your City, Your Calendar</title>
     <meta name="description" content="Discover concerts, races, festivals, and neighborhood events across Philadelphia. One calendar, auto-updated every 4 hours.">
-    <link rel="stylesheet" href="/static/styles.css?v=26">
+    <link rel="stylesheet" href="/static/styles.css?v=27">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
@@ -33,8 +33,27 @@
                 </button>
                 <button id="adminBtn" class="btn btn-admin" onclick="handleAdminBtn()">Admin</button>
             </nav>
+            <!-- Hamburger button — visible on mobile only -->
+            <button class="hamburger-menu-btn" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNavDrawer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
         </div>
         <div class="header-red-line"></div>
+        <!-- Mobile nav drawer — hidden until hamburger tapped -->
+        <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+            <button class="mobile-nav-item" id="mobileRefreshBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+                Refresh Events
+            </button>
+            <button class="mobile-nav-item" id="mobileProfileBtn" onclick="handleProfileBtn(); closeMobileNav();">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Sign In / Profile
+            </button>
+            <button class="mobile-nav-item admin" id="mobileAdminBtn" onclick="handleAdminBtn(); closeMobileNav();">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
+                Admin
+            </button>
+        </div>
     </header>
 
     <!-- ======================================================
@@ -100,6 +119,7 @@
                                     Fairmount
                                 </span>
                             </div>
+                            <span class="landmark-event-badge" id="badgeFairmount">— events</span>
                         </div>
                     </div>
                     <div class="landmark-card" onclick="handleNeighborhoodFilter('Fairmount Park')">
@@ -112,6 +132,7 @@
                                     Fairmount
                                 </span>
                             </div>
+                            <span class="landmark-event-badge" id="badgeArtMuseum">— events</span>
                         </div>
                     </div>
                     <div class="landmark-card" onclick="handleNeighborhoodFilter('Old City')">
@@ -124,6 +145,7 @@
                                     Center City
                                 </span>
                             </div>
+                            <span class="landmark-event-badge" id="badgeOldCity">— events</span>
                         </div>
                     </div>
                     <div class="landmark-card" onclick="handleNeighborhoodFilter('Rittenhouse')">
@@ -136,6 +158,7 @@
                                     Center City
                                 </span>
                             </div>
+                            <span class="landmark-event-badge" id="badgeRittenhouse">— events</span>
                         </div>
                     </div>
                 </div>
