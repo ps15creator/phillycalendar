@@ -6,7 +6,7 @@
    76ers Gold            : #F0A500
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&display=swap');
 
 :root {
     --green:        #004C54;
@@ -1191,6 +1191,33 @@ body {
 
 .empty-state .btn {
     margin-top: 8px;
+}
+
+/* ============================================================
+   LOAD MORE BUTTON
+   ============================================================ */
+.load-more-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 32px 16px 16px;
+}
+
+.load-more-btn {
+    background: var(--green);
+    color: white;
+    padding: 14px 36px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 10px rgba(0, 76, 84, 0.2);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.load-more-btn:hover {
+    background: var(--green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 76, 84, 0.3);
 }
 
 /* ============================================================

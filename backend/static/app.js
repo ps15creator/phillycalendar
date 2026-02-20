@@ -28,6 +28,7 @@ const NEIGHBORHOOD_KEYWORDS = {
 let bookmarkedIds = new Set(); // Track bookmarked event IDs (stored in localStorage)
 let currentUser = null;        // { id, email, display_name } when logged in, else null
 let savedEventIds = new Set(); // Server-side saved event IDs for the logged-in user
+let showAllEvents = false;     // Whether to show events beyond the first month
 
 // ============================================================
 // ADMIN AUTH (sessionStorage — clears when tab closes)
@@ -441,6 +442,7 @@ function updateActiveFiltersBar() {
 
 // Apply all filters
 function applyFilters() {
+    showAllEvents = false;
     filteredEvents = allEvents.filter(event => {
         const matchesCategory = currentCategory === 'all' || event.category === currentCategory;
 
@@ -590,7 +592,43 @@ function renderEvents() {
     }
 
     emptyState.style.display = 'none';
-    container.innerHTML = renderGroupedByDay();
+
+    // Determine which events to show: first month's worth, or all if expanded
+    let eventsToShow = filteredEvents;
+    let hasMore = false;
+
+    if (!showAllEvents) {
+        // Find the cutoff: one calendar month from the earliest event date
+        const firstDate = parseLocalDate(filteredEvents[0].start_date);
+        const cutoffMonth = firstDate.getMonth();
+        const cutoffYear = firstDate.getFullYear();
+        // Advance one month
+        const cutoffDate = new Date(cutoffYear, cutoffMonth + 1, 1); // first day of next month
+
+        const firstMonthEvents = filteredEvents.filter(event => {
+            const d = parseLocalDate(event.start_date);
+            return d < cutoffDate;
+        });
+
+        if (firstMonthEvents.length < filteredEvents.length) {
+            eventsToShow = firstMonthEvents;
+            hasMore = true;
+        }
+    }
+
+    container.innerHTML = renderGroupedByDay(eventsToShow);
+
+    if (hasMore) {
+        const loadMoreWrapper = document.createElement('div');
+        loadMoreWrapper.className = 'load-more-wrapper';
+        loadMoreWrapper.innerHTML = `<button class="btn load-more-btn" id="loadMoreBtn">Load More Events</button>`;
+        container.appendChild(loadMoreWrapper);
+
+        document.getElementById('loadMoreBtn').addEventListener('click', () => {
+            showAllEvents = true;
+            renderEvents();
+        });
+    }
 
     // Attach click listeners to all event rows
     document.querySelectorAll('.event-row').forEach(row => {
@@ -602,19 +640,21 @@ function renderEvents() {
 }
 
 // Group events by calendar day and render as a clean list
-function renderGroupedByDay() {
+function renderGroupedByDay(events) {
     // Build a map: "YYYY-MM-DD" → [{event, index}, ...]
     const byDay = {};
     const dayOrder = [];
 
-    filteredEvents.forEach((event, index) => {
+    events.forEach((event) => {
         const d = parseLocalDate(event.start_date);
         const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         if (!byDay[key]) {
             byDay[key] = [];
             dayOrder.push(key);
         }
-        byDay[key].push({ event, index });
+        // Use the index in filteredEvents so click handlers resolve correctly
+        const filteredIndex = filteredEvents.indexOf(event);
+        byDay[key].push({ event, index: filteredIndex });
     });
 
     dayOrder.sort();
