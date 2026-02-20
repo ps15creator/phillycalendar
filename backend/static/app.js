@@ -840,7 +840,8 @@ async function updateStats() {
         console.error('Error loading stats:', error);
     }
 
-    document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+    const lastSync = document.getElementById('lastSync');
+    if (lastSync) lastSync.textContent = new Date().toLocaleTimeString();
 }
 
 // Check for updates periodically
