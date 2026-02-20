@@ -452,7 +452,8 @@ class EventDatabase:
         """
         from datetime import timedelta
         conn = self.get_connection()
-        now = datetime.now().isoformat()
+        # Use start of today so all of today's events show regardless of current time
+        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
         max_date = (datetime.now() + timedelta(days=548)).isoformat()  # ~18 months
 
         if self.use_postgres:
@@ -460,7 +461,7 @@ class EventDatabase:
             query = 'SELECT * FROM events WHERE start_date >= %s AND start_date <= %s ORDER BY start_date ASC'
             if limit:
                 query += f' LIMIT {limit}'
-            cursor.execute(query, (now, max_date))
+            cursor.execute(query, (today_start, max_date))
             columns = [desc[0] for desc in cursor.description]
             events = [dict(zip(columns, row)) for row in cursor.fetchall()]
         else:
@@ -469,7 +470,7 @@ class EventDatabase:
             query = 'SELECT * FROM events WHERE start_date >= ? AND start_date <= ? ORDER BY start_date ASC'
             if limit:
                 query += f' LIMIT {limit}'
-            cursor.execute(query, (now, max_date))
+            cursor.execute(query, (today_start, max_date))
             events = [dict(row) for row in cursor.fetchall()]
 
         self.release_connection(conn)
