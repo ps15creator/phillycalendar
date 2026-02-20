@@ -6,7 +6,7 @@
    76ers Gold            : #F0A500
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
     --green:        #004C54;
@@ -37,7 +37,7 @@
     --border:      #e5e7eb;
     --radius:      16px;
     --radius-sm:   12px;
-    --font:        'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font:        'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1024,8 +1024,7 @@ body {
 
 .event-row:last-child { border-bottom: none; }
 
-/* Alternating row backgrounds — like v0 */
-.event-row:nth-child(even) { background: #f9fafb; }
+/* No alternating rows — all white like v0 */
 
 .event-row:hover {
     background: var(--green-light);
@@ -1034,10 +1033,10 @@ body {
 .event-row:hover .event-row-title { color: var(--green); }
 .event-row:hover .chevron { color: var(--green); transform: translateX(3px); }
 
-/* Time column — fixed width, right-aligned */
+/* Time column — wider to match v0 */
 .event-time-col {
     flex-shrink: 0;
-    width: 90px;
+    width: 110px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1045,8 +1044,8 @@ body {
 }
 
 .event-time {
-    font-size: 0.88em;
-    font-weight: 700;
+    font-size: 0.92em;
+    font-weight: 600;
     color: #6b7280;
     line-height: 1.2;
     white-space: nowrap;
