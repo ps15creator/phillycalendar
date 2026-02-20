@@ -283,12 +283,12 @@ body {
 
 .hero-cat svg { flex-shrink: 0; }
 
-/* Solid fills per category — matching v0 */
-.hero-cat[data-cat="running"]      { background: var(--green); }
-.hero-cat[data-cat="music"]        { background: #374151; }
-.hero-cat[data-cat="artsAndCulture"] { background: var(--purple); }
-.hero-cat[data-cat="foodAndDrink"] { background: #4b5563; }
-.hero-cat[data-cat="community"]    { background: #374151; }
+/* Solid fills per category — vivid distinct colors matching v0 */
+.hero-cat[data-cat="running"]        { background: #16a34a; }
+.hero-cat[data-cat="music"]          { background: #7c3232; }
+.hero-cat[data-cat="artsAndCulture"] { background: #6d28d9; }
+.hero-cat[data-cat="foodAndDrink"]   { background: #92400e; }
+.hero-cat[data-cat="community"]      { background: #1e40af; }
 
 .hero-cat:hover {
     filter: brightness(1.15);
