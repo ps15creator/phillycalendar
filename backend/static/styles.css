@@ -1740,13 +1740,13 @@ body {
 
     /* Time col: narrow, light, small — gives more space to event details */
     .event-time-col {
-        width: 62px;
-        padding-right: 10px;
+        width: 52px;
+        padding-right: 8px;
         padding-top: 3px;
         flex-shrink: 0;
     }
-    .event-time { font-size: 12px; font-weight: 400; color: #9ca3af; }
-    .event-time-tbd { font-size: 12px; font-weight: 400; color: #9ca3af; }
+    .event-time { font-size: 10px; font-weight: 400; color: #c4c9d4; }
+    .event-time-tbd { font-size: 10px; font-weight: 400; color: #c4c9d4; }
 
     /* Title + badge: allow title to wrap fully, badge below title */
     .event-row-top {
