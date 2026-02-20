@@ -1600,14 +1600,19 @@ body {
         flex: 1;
         min-width: 0;
     }
+    .header-inner { padding: 10px 16px; }
+    .header-bell-img { width: 44px; }
+    .header-brand { gap: 8px; }
     .header-brand h1 {
-        font-size: 0.9em;
+        font-size: 18px;
         letter-spacing: -0.01em;
         white-space: nowrap;
     }
-    /* Hide tagline on mobile — saves vertical + horizontal space */
     .header-tagline {
-        display: none;
+        display: block;
+        font-size: 11px;
+        margin-top: 4px;
+        opacity: 0.75;
     }
     /* Hide desktop nav buttons on mobile — replaced by hamburger */
     .header-nav {
@@ -1621,20 +1626,20 @@ body {
     /* --- HERO --- */
     .hero-content { padding: 40px 16px 36px; }
     .hero-banner h2 {
-        font-size: 1.75em;
+        font-size: 28px;
         margin-bottom: 10px;
     }
     .hero-tagline {
-        font-size: 0.85em;
+        font-size: 14px;
         line-height: 1.5;
         margin-bottom: 6px;
     }
-    .hero-sub { font-size: 0.75em; margin-bottom: 16px; }
-    .hero-eyebrow { font-size: 0.78em; margin-bottom: 12px; }
+    .hero-sub { font-size: 12px; margin-bottom: 16px; }
+    .hero-eyebrow { font-size: 12px; margin-bottom: 12px; }
     .hero-cats { gap: 7px; }
     .hero-cat {
         padding: 7px 12px;
-        font-size: 0.8em;
+        font-size: 13px;
         gap: 5px;
     }
 
@@ -1645,20 +1650,20 @@ body {
     .landmarks-section { padding: 20px 0 18px; }
     .landmarks-inner { padding: 0 12px; }
     .landmarks-header { margin-bottom: 12px; }
-    .landmarks-title { font-size: 1.05em; }
-    .landmarks-subtitle { font-size: 0.75em; }
+    .landmarks-title { font-size: 16px; }
+    .landmarks-subtitle { font-size: 12px; }
     .landmarks-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    .landmark-title { font-size: 0.85em; }
-    .landmark-sub { font-size: 0.72em; }
-    .landmark-event-badge { font-size: 0.68em; padding: 3px 7px; }
-    .events-section-title { font-size: 1.1em; margin-bottom: 12px; }
+    .landmark-title { font-size: 13px; }
+    .landmark-sub { font-size: 11px; }
+    .landmark-event-badge { font-size: 11px; padding: 3px 7px; }
+    .events-section-title { font-size: 17px; margin-bottom: 12px; }
 
     /* --- NEIGHBORHOOD STRIP — static scroll on mobile (no marquee) --- */
     .neighborhood-strip-inner { padding: 10px 12px; }
-    .neighborhood-strip-label { font-size: 0.62em; margin-bottom: 8px; }
+    .neighborhood-strip-label { font-size: 10px; margin-bottom: 8px; }
     /* Stop marquee animation on mobile — static horizontal scroll instead */
     .neighborhood-pills-track {
         animation: none;
@@ -1677,7 +1682,7 @@ body {
     .nbhd-pill[aria-hidden="true"] { display: none; }
     .nbhd-pill {
         padding: 6px 14px;
-        font-size: 0.82em;
+        font-size: 13px;
     }
 
     /* --- CONTROLS PANEL --- */
