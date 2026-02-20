@@ -723,7 +723,7 @@ function createEventRow(event, index) {
         <div class="event-time-col">
             ${hasTime
                 ? `<span class="event-time">${escapeHtml(timeStr)}</span>`
-                : `<span class="event-time-tbd">Time TBD</span>`}
+                : ``}
         </div>
         <div class="event-details-col">
             <div class="event-row-top">
