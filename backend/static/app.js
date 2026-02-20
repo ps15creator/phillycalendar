@@ -571,13 +571,13 @@ function createEventRow(event, index) {
         <div class="event-details-col">
             <div class="event-row-top">
                 <span class="event-row-title">${escapeHtml(event.title)}</span>
-                <span class="event-category ${categoryClass}">${categoryName}</span>
             </div>
             <div class="event-row-meta">
                 ${location ? `<span class="event-row-location">📍 ${escapeHtml(location)}</span>` : ''}
                 ${price ? `<span class="event-row-price">💰 ${escapeHtml(price)}</span>` : ''}
             </div>
         </div>
+        <span class="event-category ${categoryClass}">${categoryName}</span>
         <span class="chevron">›</span>
     </div>`;
 }

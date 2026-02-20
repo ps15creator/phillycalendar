@@ -990,7 +990,7 @@ body {
 
 .event-row-top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 6px;
@@ -1395,44 +1395,190 @@ body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 700px) {
-    .header-inner { padding: 16px 20px 14px; }
-    .header-brand h1 { font-size: 1.4em; }
 
-    .hero-banner { min-height: 400px; }
-    .hero-content { padding: 44px 16px 40px; }
-    .hero-banner h2 { font-size: 2.2em; }
-    .hero-tagline { font-size: 0.95em; }
-    .hero-sub { font-size: 0.82em; }
+    /* --- HEADER --- */
+    .header-inner {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+    .header-bell-img {
+        width: 34px;
+    }
+    .header-brand {
+        gap: 6px;
+        flex: 1;
+        min-width: 0;
+    }
+    .header-brand h1 {
+        font-size: 0.92em;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+    }
+    /* Hide tagline on mobile — saves vertical + horizontal space */
+    .header-tagline {
+        display: none;
+    }
+    .header-nav {
+        gap: 5px;
+        flex-shrink: 0;
+    }
+    /* Nav buttons: icon only on mobile, no text */
+    .btn-outline-nav {
+        padding: 7px 9px;
+        font-size: 0;        /* hides text */
+        gap: 0;
+        line-height: 1;
+    }
+    .btn-outline-nav svg {
+        width: 16px;
+        height: 16px;
+    }
+    .btn-admin {
+        padding: 7px 10px;
+        font-size: 0.72em;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+    }
 
-    .page-wrapper { padding: 20px 20px 56px; }
+    /* --- HERO --- */
+    .hero-banner { min-height: 320px; }
+    .hero-content { padding: 32px 16px 28px; }
+    .hero-banner h2 {
+        font-size: 1.9em;
+        margin-bottom: 12px;
+    }
+    .hero-tagline {
+        font-size: 0.88em;
+        line-height: 1.55;
+        margin-bottom: 8px;
+    }
+    .hero-sub { font-size: 0.78em; margin-bottom: 18px; }
+    .hero-cats { gap: 8px; }
+    .hero-cat {
+        padding: 8px 14px;
+        font-size: 0.82em;
+        gap: 5px;
+    }
 
-    .stats-bar { grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .stat-number { font-size: 1.75em; }
-    .stat-card { padding: 16px 12px; }
+    /* --- PAGE WRAPPER --- */
+    .page-wrapper { padding: 0 0 56px; }
 
-    .controls-panel { padding: 18px; }
-    .controls-bottom { flex-direction: column; }
-    .select-wrap { width: 100%; min-width: 0; }
-    .action-btns { width: 100%; }
-    .action-btns .btn { flex: 1; }
+    /* --- LANDMARKS --- */
+    .landmarks-section { padding: 20px 14px 24px; }
+    .landmarks-quote { font-size: 0.95em; margin-bottom: 16px; }
+    .landmarks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .landmark-title { font-size: 0.9em; }
+    .landmark-sub { font-size: 0.76em; }
 
-    .header-nav .btn { font-size: 12px; padding: 9px 14px; }
+    /* --- NEIGHBORHOOD STRIP --- */
+    .neighborhood-strip-inner { padding: 12px 14px; }
+    .neighborhood-strip-label { font-size: 0.65em; margin-bottom: 10px; }
 
-    .event-row { padding: 14px 16px; }
-    .event-time-col { width: 64px; }
-    .event-row-title { font-size: 0.95em; }
-    .event-row-meta { font-size: 0.8em; }
-    .event-category { font-size: 0.66em; }
+    /* --- CONTROLS PANEL --- */
+    .controls-panel { padding: 14px; margin: 0 12px 14px; border-radius: 12px; }
+    .events-container { padding: 0 12px; gap: 14px; }
+    .active-filters-bar { margin: 0 12px 10px; }
+    .empty-state { margin: 0 12px; }
+    /* Day groups fill full width inside the container */
+    .day-group { border-radius: 12px; }
+    .search-bar-wrap { margin-bottom: 12px; }
+    .search-bar-wrap input { padding: 11px 16px 11px 40px; font-size: 14px; }
+    .search-icon { left: 12px; }
 
-    .modal-content { margin: 16px; padding: 24px; max-height: 90vh; }
-    .modal-title { font-size: 1.25em; }
+    .filter-row {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-btn {
+        padding: 7px 13px;
+        font-size: 12px;
+        gap: 4px;
+    }
+    .filter-btn svg { width: 12px; height: 12px; }
+
+    .controls-bottom {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .select-wrap {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 14px;
+    }
+    .month-select,
+    .source-select { font-size: 13px; }
+
+    /* --- EVENT ROWS --- */
+    .day-header { padding: 12px 16px; }
+    .day-weekday { font-size: 0.95em; }
+    .day-date { font-size: 0.78em; }
+    .day-count { font-size: 0.75em; padding: 4px 10px; }
+
+    .event-row { padding: 12px 14px; gap: 0; }
+    .event-time-col { width: 58px; }
+    .event-time { font-size: 0.8em; }
+    .event-time-tbd { font-size: 0.68em; }
+    .event-row-divider { margin-right: 12px; }
+
+    .event-row-top {
+        flex-wrap: nowrap;
+        gap: 6px;
+        margin-bottom: 4px;
+        align-items: flex-start;
+    }
+    .event-row-title {
+        font-size: 0.88em;
+        flex: 1 1 auto;
+        min-width: 0;
+        /* allow title to take most of the space, wrapping naturally */
+        word-break: break-word;
+    }
+    .event-category {
+        font-size: 0.58em;
+        padding: 2px 6px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        border-left: none;
+        margin-top: 2px;
+    }
+    .event-row-meta {
+        font-size: 0.76em;
+        gap: 4px 10px;
+    }
+    .chevron { display: none; }
+
+    /* --- ACTIVE FILTERS BAR --- */
+    .active-filters-bar { padding: 8px 12px; gap: 6px; margin-bottom: 10px; }
+    .active-filters-label { font-size: 11px; }
+    .active-filter-tag { font-size: 11px; padding: 3px 8px; }
+    .clear-all-btn { font-size: 11px; padding: 3px 10px; }
+
+    /* --- MODAL --- */
+    .modal-content { margin: 12px; padding: 20px; max-height: 92vh; border-radius: 16px; }
+    .modal-title { font-size: 1.15em; padding-right: 36px; }
     .form-row { grid-template-columns: 1fr; }
     .form-actions, .event-detail-actions { flex-direction: column; }
 
-    #scrollTopBtn { width: 46px; height: 46px; bottom: 22px; right: 18px; font-size: 1.25em; }
+    /* --- SCROLL TO TOP --- */
+    #scrollTopBtn { width: 44px; height: 44px; bottom: 20px; right: 16px; font-size: 1.15em; }
 
-    .footer-philly-letters { gap: 10px; }
-    .philly-letter { width: 52px; height: 52px; font-size: 1.3em; }
+    /* --- FOOTER --- */
+    .footer-philly-letters { gap: 8px; padding: 28px 16px 24px; }
+    .philly-letter { width: 44px; height: 44px; font-size: 1.1em; }
+    .footer-neighborhoods { gap: 4px 14px; padding: 0 16px 24px; }
+    .footer-neighborhoods span { font-size: 0.72em; }
+    .footer-bottom { padding: 20px 16px; }
+    .footer-brand { font-size: 0.95em; }
+    .footer-sub { font-size: 0.78em; }
 }
 
 /* ============================================================
