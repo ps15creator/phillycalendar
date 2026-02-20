@@ -135,6 +135,18 @@ function setupEventListeners() {
         if (e.target.id === 'profileModal') closeProfileModal();
     });
 
+    // --- FILTERS TOGGLE ---
+    const filtersToggleBtn = document.getElementById('filtersToggleBtn');
+    const filterRowWrap = document.getElementById('filterRowWrap');
+    if (filtersToggleBtn && filterRowWrap) {
+        filtersToggleBtn.addEventListener('click', () => {
+            const isOpen = filterRowWrap.style.display !== 'none';
+            filterRowWrap.style.display = isOpen ? 'none' : 'flex';
+            filtersToggleBtn.classList.toggle('active', !isOpen);
+            filtersToggleBtn.setAttribute('aria-expanded', String(!isOpen));
+        });
+    }
+
     // --- HAMBURGER MENU ---
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileNavDrawer = document.getElementById('mobileNavDrawer');
@@ -607,20 +619,32 @@ function renderGroupedByDay() {
 
     dayOrder.sort();
 
+    const tKey = todayKey();
+    const tomorrowKey = (() => {
+        const t = new Date(); t.setDate(t.getDate() + 1);
+        return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    })();
+
     return dayOrder.map(key => {
         const [year, month, day] = key.split('-').map(Number);
         const d = new Date(year, month - 1, day);
-        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' });
-        const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const weekday = d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+        const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         const items = byDay[key];
-        const isToday = key === todayKey();
+        const isToday = key === tKey;
+        const isTomorrow = key === tomorrowKey;
+
+        // Label: TODAY / TOMORROW / WEEKDAY
+        const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : weekday;
+        // Short date like "Wednesday, Feb 19"
+        const shortDate = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
         return `
         <div class="day-group">
-            <div class="day-header">
+            <div class="day-header${isToday ? ' today' : ''}">
                 <div class="day-header-left">
-                    <span class="day-weekday">${isToday ? '📍 Today' : weekday}</span>
-                    <span class="day-date">${dateStr}</span>
+                    <span class="day-weekday">${label}</span>
+                    <span class="day-date">${shortDate}</span>
                 </div>
                 <span class="day-count">${items.length} event${items.length !== 1 ? 's' : ''}</span>
             </div>
