@@ -216,7 +216,10 @@ async function loadEvents() {
             // Filter out any events before today's midnight in local time
             const todayMidnight = new Date();
             todayMidnight.setHours(0, 0, 0, 0);
-            allEvents = data.events.filter(e => parseLocalDate(e.start_date) >= todayMidnight);
+            allEvents = data.events.filter(e => {
+                try { return parseLocalDate(e.start_date) >= todayMidnight; }
+                catch { return true; }
+            });
             filteredEvents = allEvents;
             populateMonthFilter();
             populateSourceFilter();
