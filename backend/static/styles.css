@@ -283,12 +283,12 @@ body {
 
 .hero-cat svg { flex-shrink: 0; }
 
-/* Solid fills per category — vivid distinct colors matching v0 */
-.hero-cat[data-cat="running"]        { background: #16a34a; }
-.hero-cat[data-cat="music"]          { background: #7c3232; }
-.hero-cat[data-cat="artsAndCulture"] { background: #6d28d9; }
-.hero-cat[data-cat="foodAndDrink"]   { background: #92400e; }
-.hero-cat[data-cat="community"]      { background: #1e40af; }
+/* Semi-transparent fills — skyline shows through, matching v0 frosted look */
+.hero-cat[data-cat="running"]        { background: rgba(22, 101, 52, 0.60); }
+.hero-cat[data-cat="music"]          { background: rgba(100, 30, 30, 0.60); }
+.hero-cat[data-cat="artsAndCulture"] { background: rgba(88, 28, 135, 0.65); }
+.hero-cat[data-cat="foodAndDrink"]   { background: rgba(101, 78, 22, 0.60); }
+.hero-cat[data-cat="community"]      { background: rgba(255, 255, 255, 0.10); }
 
 .hero-cat:hover {
     filter: brightness(1.15);
