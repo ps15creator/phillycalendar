@@ -1730,69 +1730,79 @@ body {
     .source-select { font-size: 13px; }
 
     /* --- EVENT ROWS — v0 mobile style --- */
-    .day-header { padding: 8px 14px; }
-    .day-weekday { font-size: 12px; }
-    .day-date { font-size: 12px; }
-    .day-count { font-size: 11px; padding: 2px 8px; }
+    .day-header { padding: 10px 16px; }
+    .day-weekday { font-size: 13px; }
+    .day-date { font-size: 13px; }
+    .day-count { font-size: 12px; padding: 3px 10px; }
 
-    .event-row { padding: 12px 14px; align-items: center; }
+    /* Row: align top so time sits next to first line of title */
+    .event-row { padding: 14px 16px; align-items: flex-start; }
+
+    /* Time col: fixed width, bold, larger — matches v0 */
     .event-time-col {
-        width: 72px;
-        padding-right: 10px;
-        padding-top: 0;
+        width: 80px;
+        padding-right: 12px;
+        padding-top: 2px;
         flex-shrink: 0;
     }
-    .event-time { font-size: 13px; font-weight: 400; }
-    .event-time-tbd { font-size: 13px; font-weight: 400; }
+    .event-time { font-size: 14px; font-weight: 500; color: #374151; }
+    .event-time-tbd { font-size: 14px; font-weight: 500; color: #374151; }
 
-    /* Title + badge stay on one line — badge inline, title truncates */
+    /* Title + badge: allow title to wrap fully, badge below title */
     .event-row-top {
         gap: 6px;
-        margin-bottom: 3px;
-        align-items: center;
-        flex-wrap: nowrap;
+        margin-bottom: 5px;
+        align-items: flex-start;
+        flex-wrap: wrap;
     }
     .event-row-title {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
-        flex: 1 1 0;
-        min-width: 0;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: unset;
+        color: #111827;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
         display: block;
+        line-height: 1.35;
+        flex: 1 1 100%;
     }
     .event-category {
         font-size: 11px;
         font-weight: 500;
-        padding: 2px 8px;
+        padding: 3px 10px;
         flex-shrink: 0;
     }
-    /* Meta row: location · price on one line */
+
+    /* Meta: location on own line, price on own line — matches v0 */
     .event-row-meta {
-        font-size: 12px;
-        flex-direction: row;
-        gap: 4px;
-        align-items: center;
+        font-size: 13px;
+        flex-direction: column;
+        gap: 3px;
+        align-items: flex-start;
         flex-wrap: nowrap;
-        overflow: hidden;
+        overflow: visible;
     }
     .event-row-location {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
         min-width: 0;
-        flex: 1 1 0;
     }
     .event-row-price {
         color: var(--text-light);
         font-weight: 400;
         white-space: nowrap;
-        flex-shrink: 0;
     }
-    .meta-dot { display: inline; }
-    .chevron { display: none; }
+    .meta-dot { display: none; }
+
+    /* Show chevron on mobile like v0 */
+    .chevron {
+        display: flex;
+        align-self: center;
+        margin-left: 8px;
+        font-size: 1.2em;
+        color: #9ca3af;
+    }
 
     /* --- ACTIVE FILTERS BAR --- */
     .active-filters-bar { padding: 8px 12px; gap: 6px; margin-bottom: 10px; }
