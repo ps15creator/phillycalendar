@@ -31,6 +31,7 @@ class SouthStreetScraper(BaseScraper):
 
     def scrape(self) -> List[Dict]:
         events = []
+        seen = set()
         try:
             response = requests.get(self.URL, headers=self.headers, timeout=15)
             response.raise_for_status()
@@ -42,7 +43,7 @@ class SouthStreetScraper(BaseScraper):
                     items = data if isinstance(data, list) else [data]
                     for item in items:
                         if item.get('@type') == 'Event':
-                            event = self._parse_event(item)
+                            event = self._parse_event(item, seen)
                             if event:
                                 events.append(event)
                 except (json.JSONDecodeError, AttributeError):
@@ -54,11 +55,17 @@ class SouthStreetScraper(BaseScraper):
         logger.info(f"South Street: {len(events)} events")
         return events
 
-    def _parse_event(self, item: Dict) -> Optional[Dict]:
+    def _parse_event(self, item: Dict, seen: set = None) -> Optional[Dict]:
         try:
             title = item.get('name', '').strip()
             if not title:
                 return None
+
+            if seen is not None:
+                key = (title, item.get('startDate', ''))
+                if key in seen:
+                    return None
+                seen.add(key)
 
             start_date = self._parse_date(item.get('startDate', ''))
             if not start_date or start_date < datetime.now():

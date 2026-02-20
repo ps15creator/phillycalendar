@@ -116,7 +116,13 @@ class FillmoreScraper(BaseScraper):
         date_positions = [(m.start(), m.group(1)) for m in date_pattern.finditer(content)]
         url_positions = [(m.start(), m.group(1)) for m in url_pattern.finditer(content)]
 
+        # Names to skip — venue/site names that are not actual event titles
+        VENUE_NAMES = {'The Fillmore Philadelphia', 'Fillmore Philadelphia', 'The Fillmore'}
+
         for name_pos, name in name_positions:
+            if name in VENUE_NAMES:
+                continue
+
             # Find closest date after this name
             closest_date = None
             closest_date_dist = float('inf')

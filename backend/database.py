@@ -164,6 +164,8 @@ class EventDatabase:
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_bookmarks_event_id ON bookmarks(event_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
+        # Unique constraint to prevent duplicate events at the DB level
+        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
 
         conn.commit()
         conn.close()
@@ -257,6 +259,8 @@ class EventDatabase:
 
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
+        # Unique constraint to prevent duplicate events at the DB level
+        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
 
         conn.commit()
         self.release_connection(conn)
@@ -322,6 +326,9 @@ class EventDatabase:
     def add_events_batch(self, events: List[Dict]) -> int:
         """Add multiple events, skipping duplicates (same title + start_date). Returns count of newly added events."""
         added = 0
+        # Pre-deduplicate within the batch itself to avoid redundant inserts
+        seen_in_batch = set()
+
         for event in events:
             try:
                 title = event.get('title', '')
@@ -331,36 +338,61 @@ class EventDatabase:
                 if not title or not start_date:
                     continue
 
-                # Skip if duplicate: always match on title + start_date (unique per time slot).
-                # Do NOT deduplicate by source_url alone — recurring events share the same
-                # source_url for multiple time slots on the same or different days.
+                batch_key = (title, str(start_date))
+                if batch_key in seen_in_batch:
+                    continue
+                seen_in_batch.add(batch_key)
+
                 conn = self.get_connection()
                 cursor = conn.cursor()
-                placeholder = '%s' if self.use_postgres else '?'
-                cursor.execute(
-                    f'SELECT id FROM events WHERE title = {placeholder} AND start_date = {placeholder} LIMIT 1',
-                    (title, start_date)
-                )
-                exists = cursor.fetchone()
+
+                if self.use_postgres:
+                    # Use ON CONFLICT DO NOTHING to atomically skip duplicates
+                    cursor.execute('''
+                        INSERT INTO events (title, description, start_date, end_date, location,
+                                          category, price, source, source_url, registration_deadline, is_user_added)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (title, start_date) DO NOTHING
+                    ''', (
+                        title,
+                        event.get('description', ''),
+                        start_date,
+                        event.get('end_date'),
+                        event.get('location', 'Philadelphia, PA'),
+                        event.get('category', 'community'),
+                        event.get('price'),
+                        event.get('source', 'Unknown'),
+                        source_url,
+                        event.get('registration_deadline'),
+                        0
+                    ))
+                    rows_affected = cursor.rowcount
+                else:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO events (title, description, start_date, end_date, location,
+                                          category, price, source, source_url, registration_deadline, is_user_added)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        title,
+                        event.get('description', ''),
+                        start_date,
+                        event.get('end_date'),
+                        event.get('location', 'Philadelphia, PA'),
+                        event.get('category', 'community'),
+                        event.get('price'),
+                        event.get('source', 'Unknown'),
+                        source_url,
+                        event.get('registration_deadline'),
+                        0
+                    ))
+                    rows_affected = cursor.rowcount
+
+                conn.commit()
                 self.release_connection(conn)
 
-                if exists:
-                    continue
-
-                self.add_event(
-                    title=title,
-                    description=event.get('description', ''),
-                    start_date=start_date,
-                    end_date=event.get('end_date'),
-                    location=event.get('location', 'Philadelphia, PA'),
-                    category=event.get('category', 'community'),
-                    price=event.get('price'),
-                    source=event.get('source', 'Unknown'),
-                    source_url=source_url,
-                    registration_deadline=event.get('registration_deadline'),
-                    is_user_added=0
-                )
-                added += 1
+                if rows_affected > 0:
+                    added += 1
+                    logger.info(f"Added event: {title}")
 
             except Exception as e:
                 logger.error(f"Error adding event in batch: {e}")

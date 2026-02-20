@@ -232,7 +232,8 @@ class FilmadelphiaScraper(BaseScraper):
 
             end_date = self._parse_date(ev.get('endDate', ''))
 
-            # Location
+            # Only include events in Philadelphia city proper
+            PHILLY_CITIES = {'philadelphia', 'phila'}
             loc = ev.get('location', {})
             if isinstance(loc, dict):
                 venue = loc.get('name', 'Philadelphia Film Society')
@@ -242,6 +243,8 @@ class FilmadelphiaScraper(BaseScraper):
                     city = addr.get('addressLocality', 'Philadelphia')
                     state = addr.get('addressRegion', 'PA')
                     if state and state.upper() not in ('PA', 'PENNSYLVANIA'):
+                        return None
+                    if city and city.lower().strip() not in PHILLY_CITIES:
                         return None
                     location = ', '.join(p for p in [venue, street, city, state] if p)
                 else:
