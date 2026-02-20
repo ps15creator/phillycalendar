@@ -156,6 +156,11 @@ async function loadEvents() {
             populateSourceFilter();
             renderEvents();
             updateStats();
+            // Update hero event count
+            const heroCount = document.getElementById('heroEventCount');
+            if (heroCount && allEvents.length > 0) {
+                heroCount.textContent = `${allEvents.length} upcoming events in Philadelphia`;
+            }
         }
     } catch (error) {
         console.error('Error loading events:', error);
