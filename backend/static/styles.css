@@ -6,7 +6,7 @@
    76ers Gold            : #F0A500
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
     --green:        #004C54;
@@ -1052,10 +1052,10 @@ body {
 }
 
 .event-time-tbd {
-    font-size: 0.78em;
-    color: var(--text-light);
-    font-style: italic;
-    font-weight: 500;
+    font-size: 0.92em;
+    color: #6b7280;
+    font-style: normal;
+    font-weight: 600;
     white-space: nowrap;
 }
 
@@ -1738,7 +1738,7 @@ body {
         flex-shrink: 0;
     }
     .event-time { font-size: 0.78em; }
-    .event-time-tbd { font-size: 0.72em; }
+    .event-time-tbd { font-size: 0.78em; }
 
     /* Title + badge stay on one line — badge inline, title truncates */
     .event-row-top {
