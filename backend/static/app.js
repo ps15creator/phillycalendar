@@ -97,7 +97,8 @@ function stripHtml(str) {
 // Setup event listeners
 function setupEventListeners() {
     document.getElementById('searchInput').addEventListener('input', handleSearch);
-    document.getElementById('refreshBtn').addEventListener('click', refreshEvents);
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', refreshEvents);
     document.getElementById('monthSelect').addEventListener('change', handleMonthFilter);
     document.getElementById('sourceSelect').addEventListener('change', handleSourceFilter);
 
