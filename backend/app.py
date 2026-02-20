@@ -97,7 +97,7 @@ def send_otp_email(to_email: str, code: str) -> bool:
     import resend
 
     api_key  = os.environ.get('RESEND_API_KEY', '').strip()
-    from_addr = os.environ.get('RESEND_FROM', 'Philly Events Calendar <noreply@phillycalendar.com>').strip()
+    from_addr = os.environ.get('RESEND_FROM', "What's On Philly <noreply@whatsonphilly.com>").strip()
 
     if not api_key:
         logger.warning('RESEND_API_KEY not configured — OTP email not sent')
@@ -107,7 +107,7 @@ def send_otp_email(to_email: str, code: str) -> bool:
 
     html = f"""
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
-      <h2 style="color:#004C54;">&#x1F514; Philly Events Calendar</h2>
+      <h2 style="color:#004C54;">&#x1F514; What's On Philly</h2>
       <p style="color:#333;">Your one-time login code:</p>
       <div style="font-size:38px;font-weight:900;letter-spacing:10px;color:#004C54;
                   background:#e6f4f5;padding:20px;border-radius:12px;text-align:center;
@@ -121,7 +121,7 @@ def send_otp_email(to_email: str, code: str) -> bool:
         resend.Emails.send({
             'from':    from_addr,
             'to':      [to_email],
-            'subject': f"{code} — Your Philly Events login code",
+            'subject': f"{code} — Your What's On Philly login code",
             'html':    html,
         })
         logger.info(f'OTP email sent to {to_email}')
