@@ -1745,8 +1745,8 @@ body {
         padding-top: 3px;
         flex-shrink: 0;
     }
-    .event-time { font-size: 10px; font-weight: 400; color: #c4c9d4; }
-    .event-time-tbd { font-size: 10px; font-weight: 400; color: #c4c9d4; }
+    .event-time { font-size: 9px; font-weight: 300; color: #d9dde6; }
+    .event-time-tbd { font-size: 9px; font-weight: 300; color: #d9dde6; }
 
     /* Title + badge: allow title to wrap fully, badge below title */
     .event-row-top {
