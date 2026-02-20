@@ -164,10 +164,22 @@ class EventDatabase:
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_bookmarks_event_id ON bookmarks(event_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
-        # Unique constraint to prevent duplicate events at the DB level
-        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
-
         conn.commit()
+
+        # Add unique index in a separate step — first deduplicate, then create index
+        try:
+            cursor.execute('''
+                DELETE FROM events WHERE id NOT IN (
+                    SELECT MIN(id) FROM events GROUP BY title, start_date
+                )
+            ''')
+            conn.commit()
+            cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
+            conn.commit()
+        except Exception as idx_err:
+            conn.rollback()
+            logger.warning(f"Could not create unique index on events(title, start_date): {idx_err}")
+
         conn.close()
         logger.info("SQLite database initialized")
 
@@ -259,10 +271,23 @@ class EventDatabase:
 
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_tokens(email)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_saves_user_id ON user_saves(user_id)')
-        # Unique constraint to prevent duplicate events at the DB level
-        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
-
         conn.commit()
+
+        # Add unique index on (title, start_date) in a separate transaction.
+        # First remove any existing duplicates (keep the lowest id), then create the index.
+        try:
+            cursor.execute('''
+                DELETE FROM events WHERE id NOT IN (
+                    SELECT MIN(id) FROM events GROUP BY title, start_date
+                )
+            ''')
+            conn.commit()
+            cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_events_title_date ON events(title, start_date)')
+            conn.commit()
+        except Exception as idx_err:
+            conn.rollback()
+            logger.warning(f"Could not create unique index on events(title, start_date): {idx_err}")
+
         self.release_connection(conn)
 
     # Event CRUD Operations
