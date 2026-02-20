@@ -25,6 +25,9 @@ gunicorn==21.2.0
 # Environment Variables
 python-dotenv==1.0.0
 
+# Email (Resend API)
+resend==2.7.0
+
 # Optional: For more advanced scraping
 # selenium==4.15.2  # Uncomment if you need JavaScript rendering
 # playwright==1.40.0  # Alternative to Selenium

@@ -93,29 +93,18 @@ def require_login(f):
 
 
 def send_otp_email(to_email: str, code: str) -> bool:
-    """Send a 6-digit OTP code to the given email via SMTP. Returns True on success."""
-    import smtplib
-    import ssl
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+    """Send a 6-digit OTP code to the given email via Resend API. Returns True on success."""
+    import resend
 
-    host     = os.environ.get('MAIL_HOST', 'smtp.gmail.com')
-    port     = int(os.environ.get('MAIL_PORT', '587'))
-    user     = os.environ.get('MAIL_USER', '').strip()
-    password = os.environ.get('MAIL_PASS', '').strip().replace(' ', '')  # strip spaces from Gmail app password
-    from_addr = os.environ.get('MAIL_FROM', user).strip()
+    api_key  = os.environ.get('RESEND_API_KEY', '').strip()
+    from_addr = os.environ.get('RESEND_FROM', 'Philly Events Calendar <noreply@phillycalendar.com>').strip()
 
-    if not user or not password:
-        logger.warning('MAIL_USER / MAIL_PASS not configured — OTP email not sent')
+    if not api_key:
+        logger.warning('RESEND_API_KEY not configured — OTP email not sent')
         return False
 
-    plain = (
-        f"Hi there!\n\n"
-        f"Your Philly Events Calendar login code is:\n\n"
-        f"    {code}\n\n"
-        f"This code expires in 10 minutes. If you didn't request this, ignore this email.\n\n"
-        f"— Philly Events Calendar\nhttps://phillycalendar.onrender.com"
-    )
+    resend.api_key = api_key
+
     html = f"""
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
       <h2 style="color:#004C54;">&#x1F514; Philly Events Calendar</h2>
@@ -127,20 +116,14 @@ def send_otp_email(to_email: str, code: str) -> bool:
          If you didn't request this, you can safely ignore this email.</p>
     </div>
     """
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = f"{code} — Your Philly Events login code"
-    msg['From']    = f"Philly Events Calendar <{from_addr}>"
-    msg['To']      = to_email
-    msg.attach(MIMEText(plain, 'plain'))
-    msg.attach(MIMEText(html,  'html'))
 
     try:
-        ctx = ssl.create_default_context()
-        with smtplib.SMTP(host, port, timeout=10) as smtp:  # 10s timeout prevents gunicorn worker kill
-            smtp.ehlo()
-            smtp.starttls(context=ctx)
-            smtp.login(user, password)
-            smtp.sendmail(from_addr, to_email, msg.as_string())
+        resend.Emails.send({
+            'from':    from_addr,
+            'to':      [to_email],
+            'subject': f"{code} — Your Philly Events login code",
+            'html':    html,
+        })
         logger.info(f'OTP email sent to {to_email}')
         return True
     except Exception as e:
