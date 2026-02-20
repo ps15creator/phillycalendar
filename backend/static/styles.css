@@ -1761,8 +1761,10 @@ body {
         color: #111827;
         white-space: normal;
         overflow: visible;
-        text-overflow: unset;
+        text-overflow: clip;
         display: block;
+        -webkit-line-clamp: unset;
+        -webkit-box-orient: unset;
         line-height: 1.35;
         flex: 1 1 100%;
     }
@@ -1787,10 +1789,13 @@ body {
         overflow: visible;
         text-overflow: unset;
         min-width: 0;
+        font-size: 13px;
+        color: var(--text-light);
     }
     .event-row-price {
         color: var(--text-light);
         font-weight: 400;
+        font-size: 13px;
         white-space: nowrap;
     }
     .meta-dot { display: none; }
