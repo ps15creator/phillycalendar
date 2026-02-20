@@ -720,11 +720,6 @@ function createEventRow(event, index) {
 
     return `
     <div class="event-row" data-event-index="${index}">
-        <div class="event-time-col">
-            ${hasTime
-                ? `<span class="event-time">${escapeHtml(timeStr)}</span>`
-                : ``}
-        </div>
         <div class="event-details-col">
             <div class="event-row-top">
                 <span class="event-row-title">${escapeHtml(event.title)}</span>

@@ -1033,31 +1033,10 @@ body {
 .event-row:hover .event-row-title { color: var(--green); }
 .event-row:hover .chevron { color: var(--green); transform: translateX(3px); }
 
-/* Time column — wider to match v0 */
-.event-time-col {
-    flex-shrink: 0;
-    width: 110px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-right: 20px;
-}
-
-.event-time {
-    font-size: 15px;
-    font-weight: 400;
-    color: #6b7280;
-    line-height: 1.2;
-    white-space: nowrap;
-}
-
-.event-time-tbd {
-    font-size: 15px;
-    color: #6b7280;
-    font-style: normal;
-    font-weight: 400;
-    white-space: nowrap;
-}
+/* Time column — hidden, time removed from event rows */
+.event-time-col { display: none; }
+.event-time { display: none; }
+.event-time-tbd { display: none; }
 
 /* No divider — cleaner like v0 */
 .event-row-divider { display: none; }
@@ -1737,16 +1716,6 @@ body {
 
     /* Row: align top so time sits next to first line of title */
     .event-row { padding: 14px 16px; align-items: flex-start; }
-
-    /* Time col: narrow, light, small — gives more space to event details */
-    .event-time-col {
-        width: 52px;
-        padding-right: 8px;
-        padding-top: 3px;
-        flex-shrink: 0;
-    }
-    .event-time { font-size: 10px; font-weight: 400; color: #c4c9d4; }
-    .event-time-tbd { font-size: 10px; font-weight: 400; color: #c4c9d4; }
 
     /* Title + badge: allow title to wrap fully, badge below title */
     .event-row-top {
