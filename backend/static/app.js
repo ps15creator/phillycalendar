@@ -593,25 +593,23 @@ function renderEvents() {
 
     emptyState.style.display = 'none';
 
-    // Determine which events to show: first month's worth, or all if expanded
+    // Determine which events to show: next 14 days from today, or all if expanded
     let eventsToShow = filteredEvents;
     let hasMore = false;
 
     if (!showAllEvents) {
-        // Find the cutoff: one calendar month from the earliest event date
-        const firstDate = parseLocalDate(filteredEvents[0].start_date);
-        const cutoffMonth = firstDate.getMonth();
-        const cutoffYear = firstDate.getFullYear();
-        // Advance one month
-        const cutoffDate = new Date(cutoffYear, cutoffMonth + 1, 1); // first day of next month
+        // Cutoff = start of the day 14 days from today
+        const cutoffDate = new Date();
+        cutoffDate.setHours(0, 0, 0, 0);
+        cutoffDate.setDate(cutoffDate.getDate() + 14);
 
-        const firstMonthEvents = filteredEvents.filter(event => {
+        const firstTwoWeeks = filteredEvents.filter(event => {
             const d = parseLocalDate(event.start_date);
             return d < cutoffDate;
         });
 
-        if (firstMonthEvents.length < filteredEvents.length) {
-            eventsToShow = firstMonthEvents;
+        if (firstTwoWeeks.length < filteredEvents.length) {
+            eventsToShow = firstTwoWeeks;
             hasMore = true;
         }
     }
