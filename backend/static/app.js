@@ -598,10 +598,10 @@ function renderEvents() {
     let hasMore = false;
 
     if (!showAllEvents) {
-        // Cutoff = start of the day 14 days from today
+        // Cutoff = start of the day 7 days from today
         const cutoffDate = new Date();
         cutoffDate.setHours(0, 0, 0, 0);
-        cutoffDate.setDate(cutoffDate.getDate() + 14);
+        cutoffDate.setDate(cutoffDate.getDate() + 7);
 
         const firstTwoWeeks = filteredEvents.filter(event => {
             const d = parseLocalDate(event.start_date);
