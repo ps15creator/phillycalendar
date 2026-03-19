@@ -8,6 +8,17 @@ let currentMonth = 'all';
 let currentSource = 'all';
 let currentNeighborhood = 'all';
 
+// Category badge labels (text-only, no emoji — keeps pills compact on mobile)
+const BADGE_LABELS = {
+    running: 'Running',
+    artsAndCulture: 'Arts & Culture',
+    music: 'Music',
+    foodAndDrink: 'Food & Drink',
+    community: 'Community',
+    business: 'Business',
+    other: 'Other',
+};
+
 // Keyword mapping: neighbourhood pill label → location substrings to match
 const NEIGHBORHOOD_KEYWORDS = {
     'Rittenhouse':        ['rittenhouse', 'sansom', 'walnut street'],
@@ -711,7 +722,6 @@ function createEventRow(event, index) {
         ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
         : '';
     const categoryClass = `category-${event.category}`;
-    const BADGE_LABELS = {running:'Running', artsAndCulture:'Arts & Culture', music:'Music', foodAndDrink:'Food & Drink', community:'Community', business:'Business', other:'Other'};
     const badgeLabel = BADGE_LABELS[event.category] || (event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Other');
     const location = event.location || '';
     const price = event.price || '';
