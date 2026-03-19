@@ -242,8 +242,8 @@ async function loadEvents() {
             if (heroCount && allEvents.length > 0) {
                 heroCount.textContent = `${allEvents.length} upcoming events in Philadelphia`;
             }
-            // Update landmark event count badges
-            updateLandmarkBadges();
+            // Rebuild neighborhood strip from live event data
+            buildNeighborhoodStrip();
         }
     } catch (error) {
         console.error('Error loading events:', error);
@@ -290,6 +290,68 @@ function updateLandmarkBadges() {
     if (badgeArtMuseum) badgeArtMuseum.textContent = fairmountCount ? `${fairmountCount} events` : 'Explore';
     if (badgeOldCity)   badgeOldCity.textContent   = oldCityCount   ? `${oldCityCount} events`   : 'Explore';
     if (badgeRittenhouse) badgeRittenhouse.textContent = rittenhouseCount ? `${rittenhouseCount} events` : 'Explore';
+}
+
+// Build neighborhood pills dynamically from live event data.
+// - Shows only known neighborhoods that have ≥1 matching event.
+// - Scans unmatched locations for new neighborhood names and adds them too.
+// - Registers any new neighborhoods in NEIGHBORHOOD_KEYWORDS so filtering works.
+function buildNeighborhoodStrip() {
+    const track = document.querySelector('.neighborhood-pills-track');
+    if (!track || !allEvents.length) return;
+
+    // Step 1: known neighborhoods that have ≥1 event
+    const activeKnown = Object.keys(NEIGHBORHOOD_KEYWORDS).filter(name => {
+        const keywords = NEIGHBORHOOD_KEYWORDS[name];
+        return allEvents.some(ev => {
+            const loc = (ev.location || '').toLowerCase();
+            return keywords.some(kw => loc.includes(kw));
+        });
+    });
+
+    // Step 2: events not matched by any known keyword → scan for new neighborhoods
+    const allKnownKeywords = Object.values(NEIGHBORHOOD_KEYWORDS).flat();
+    const skipTerms = new Set(['philadelphia', 'pa', 'phila', 'united states', 'us', 'usa']);
+    const newNeighborhoods = new Map(); // display name → keyword
+
+    allEvents.forEach(ev => {
+        const loc = ev.location || '';
+        const lower = loc.toLowerCase();
+        if (!loc || allKnownKeywords.some(kw => lower.includes(kw))) return;
+        // Parse "Venue Name, Neighborhood, PA" — skip first segment (venue)
+        const parts = loc.split(',').map(p => p.trim()).filter(Boolean);
+        for (const part of parts.slice(1)) {
+            const lp = part.toLowerCase().trim();
+            if (
+                !skipTerms.has(lp) &&
+                !/^\d/.test(part) &&
+                part.length > 2 &&
+                part.length < 35 &&
+                !NEIGHBORHOOD_KEYWORDS[part] &&
+                !newNeighborhoods.has(part)
+            ) {
+                newNeighborhoods.set(part, lp);
+            }
+        }
+    });
+
+    // Step 3: register new neighborhoods so handleNeighborhoodFilter can match them
+    for (const [name, kw] of newNeighborhoods) {
+        NEIGHBORHOOD_KEYWORDS[name] = [kw];
+    }
+
+    // Step 4: build pills (duplicated for seamless marquee loop)
+    const allNames = [...activeKnown, ...newNeighborhoods.keys()];
+    if (!allNames.length) return;
+
+    function pill(name, hidden = false) {
+        const attrs = hidden ? ' aria-hidden="true" tabindex="-1"' : '';
+        return `<button class="nbhd-pill" onclick="handleNeighborhoodFilter('${name}')"${attrs}>${name}</button>`;
+    }
+
+    track.innerHTML =
+        allNames.map(n => pill(n)).join('') +
+        allNames.map(n => pill(n, true)).join('');
 }
 
 // Scrape new events
