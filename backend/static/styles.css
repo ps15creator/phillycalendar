@@ -1564,21 +1564,9 @@ body {
 @media (max-width: 700px) {
 
     /* --- HEADER --- */
-    .header-inner {
-        padding: 8px 14px;
-        gap: 8px;
-    }
-    .header-bell-img {
-        width: 32px;
-    }
-    .header-brand {
-        gap: 8px;
-        flex: 1;
-        min-width: 0;
-    }
-    .header-inner { padding: 10px 16px; }
+    .header-inner { padding: 10px 16px; gap: 8px; }
     .header-bell-img { width: 44px; }
-    .header-brand { gap: 8px; }
+    .header-brand { gap: 8px; flex: 1; min-width: 0; }
     .header-brand h1 {
         font-size: 18px;
         letter-spacing: -0.01em;
@@ -1626,20 +1614,20 @@ body {
     .landmarks-section { padding: 20px 0 18px; }
     .landmarks-inner { padding: 0 12px; }
     .landmarks-header { margin-bottom: 12px; }
-    .landmarks-title { font-size: 16px; }
+    .landmarks-title { font-size: 18px; font-weight: 700; }
     .landmarks-subtitle { font-size: 12px; }
     .landmarks-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    .landmark-title { font-size: 13px; }
+    .landmark-title { font-size: 13px; font-weight: 600; }
     .landmark-sub { font-size: 11px; }
     .landmark-event-badge { font-size: 11px; padding: 3px 7px; }
-    .events-section-title { font-size: 17px; margin-bottom: 12px; }
+    .events-section-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
 
     /* --- NEIGHBORHOOD STRIP — static scroll on mobile (no marquee) --- */
     .neighborhood-strip-inner { padding: 10px 12px; }
-    .neighborhood-strip-label { font-size: 10px; margin-bottom: 8px; }
+    .neighborhood-strip-label { font-size: 11px; margin-bottom: 8px; }
     /* Stop marquee animation on mobile — static horizontal scroll instead */
     .neighborhood-pills-track {
         animation: none;
@@ -1669,7 +1657,7 @@ body {
     /* Day groups fill full width inside the container */
     .day-group { border-radius: 12px; }
     .search-bar-wrap { margin-bottom: 10px; }
-    .search-bar-wrap input { padding: 12px 14px 12px 44px; font-size: 14px; }
+    .search-bar-wrap input { padding: 12px 14px 12px 44px; font-size: 15px; }
     .search-icon { left: 14px; }
     .filters-toggle-btn { padding: 12px 14px; font-size: 13px; }
 
@@ -1687,8 +1675,8 @@ body {
     }
     .filter-row::-webkit-scrollbar { display: none; }
     .filter-btn {
-        padding: 7px 12px;
-        font-size: 12px;
+        padding: 7px 14px;
+        font-size: 13px;
         gap: 4px;
     }
     .filter-btn svg { width: 12px; height: 12px; }
@@ -1705,11 +1693,11 @@ body {
     .month-select,
     .source-select { font-size: 13px; }
 
-    /* --- EVENT ROWS — v0 mobile style --- */
+    /* --- EVENT ROWS --- */
     .day-header { padding: 10px 16px; }
-    .day-weekday { font-size: 13px; }
-    .day-date { font-size: 13px; }
-    .day-count { font-size: 12px; padding: 3px 10px; }
+    .day-weekday { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; }
+    .day-date { font-size: 12px; font-weight: 400; opacity: 0.8; }
+    .day-count { font-size: 11px; padding: 2px 8px; font-weight: 600; }
 
     /* Row: align top so time sits next to first line of title */
     .event-row { padding: 14px 16px; align-items: flex-start; }
@@ -1737,36 +1725,38 @@ body {
     }
     .event-category {
         font-size: 11px;
-        font-weight: 500;
-        padding: 3px 10px;
+        font-weight: 600;
+        padding: 2px 9px;
         flex-shrink: 0;
+        letter-spacing: 0.01em;
     }
 
-    /* Meta: location on own line, price on own line — matches v0 */
+    /* Meta: location · price on one line */
     .event-row-meta {
-        font-size: 13px;
-        flex-direction: column;
-        gap: 3px;
-        align-items: flex-start;
+        font-size: 12px;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
         flex-wrap: nowrap;
-        overflow: visible;
+        overflow: hidden;
     }
     .event-row-location {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         min-width: 0;
-        max-width: 100%;
-        font-size: 13px;
+        flex: 1;
+        font-size: 12px;
         color: var(--text-light);
     }
     .event-row-price {
         color: var(--text-light);
         font-weight: 400;
-        font-size: 13px;
+        font-size: 12px;
         white-space: nowrap;
+        flex-shrink: 0;
     }
-    .meta-dot { display: none; }
+    .meta-dot { display: block; flex-shrink: 0; }
 
     /* Show chevron on mobile like v0 */
     .chevron {
@@ -1779,9 +1769,9 @@ body {
 
     /* --- ACTIVE FILTERS BAR --- */
     .active-filters-bar { padding: 8px 12px; gap: 6px; margin-bottom: 10px; }
-    .active-filters-label { font-size: 11px; }
-    .active-filter-tag { font-size: 11px; padding: 3px 8px; }
-    .clear-all-btn { font-size: 11px; padding: 3px 10px; }
+    .active-filters-label { font-size: 11px; font-weight: 700; }
+    .active-filter-tag { font-size: 12px; padding: 3px 9px; }
+    .clear-all-btn { font-size: 12px; padding: 3px 10px; }
 
     /* --- MODAL --- */
     .modal-content { margin: 12px; padding: 20px; max-height: 92vh; border-radius: 16px; }
@@ -1794,12 +1784,13 @@ body {
 
     /* --- FOOTER --- */
     .footer-philly-letters { gap: 8px; padding: 28px 16px 24px; }
-    .philly-letter { width: 44px; height: 44px; font-size: 1.1em; }
+    .philly-letter { width: 44px; height: 44px; font-size: 20px; }
     .footer-neighborhoods { gap: 4px 14px; padding: 0 16px 24px; }
-    .footer-neighborhoods span { font-size: 0.72em; }
+    .footer-neighborhoods span { font-size: 11px; }
     .footer-bottom { padding: 20px 16px; }
-    .footer-brand { font-size: 0.95em; }
-    .footer-sub { font-size: 0.78em; }
+    .footer-brand { font-size: 14px; font-weight: 700; }
+    .footer-url a { font-size: 13px; }
+    .footer-sub { font-size: 12px; }
 }
 
 /* Hero category pills hover — brightness lift, defined above with solid fills */
