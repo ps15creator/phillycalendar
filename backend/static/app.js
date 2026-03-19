@@ -19,6 +19,25 @@ const BADGE_LABELS = {
     other: 'Other',
 };
 
+// Normalize event titles: if a title is mostly uppercase (shouting), convert to title case.
+// Leaves mixed-case titles (e.g. "Dad's Hat & Gas Lamp Hotel") untouched.
+function normalizeTitle(title) {
+    if (!title) return title;
+    const letters = title.replace(/[^a-zA-Z]/g, '');
+    if (!letters.length) return title;
+    // Only normalize if >60% of letters are uppercase
+    const upperRatio = (title.match(/[A-Z]/g) || []).length / letters.length;
+    if (upperRatio < 0.6) return title;
+    // Small words that stay lowercase (except at the very start)
+    const minor = new Set(['a','an','the','and','but','or','nor','for','so','at','by','in','of','on','to','up','as','via','vs','&']);
+    return title.toLowerCase().replace(/(\S+)/g, (word, offset) => {
+        if (offset === 0 || !minor.has(word)) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+        return word;
+    });
+}
+
 // Keyword mapping: neighbourhood pill label → location substrings to match
 const NEIGHBORHOOD_KEYWORDS = {
     'Rittenhouse':        ['rittenhouse', 'sansom', 'walnut street'],
@@ -803,7 +822,7 @@ function createEventRow(event, index) {
     <div class="event-row" data-event-index="${index}">
         <div class="event-details-col">
             <div class="event-row-top">
-                <span class="event-row-title">${escapeHtml(event.title)}</span>
+                <span class="event-row-title">${escapeHtml(normalizeTitle(event.title))}</span>
                 <span class="event-category ${categoryClass}">${badgeLabel}</span>
             </div>
             <div class="event-row-meta">
@@ -842,7 +861,7 @@ function showEventDetail(event) {
     }
 
     modalBody.innerHTML = `
-        <h2 class="modal-title" id="eventModalTitle">${escapeHtml(event.title)}</h2>
+        <h2 class="modal-title" id="eventModalTitle">${escapeHtml(normalizeTitle(event.title))}</h2>
 
         <div class="modal-detail">
             <strong>📅 Date & Time</strong><br>
@@ -1229,7 +1248,7 @@ function showBookmarks() {
         const date = parseLocalDate(event.start_date);
         return `
             <div class="bookmark-row" onclick="showBookmarkedEvent(${event.id})" style="cursor:pointer">
-                <div class="bookmark-title">${escapeHtml(event.title)}</div>
+                <div class="bookmark-title">${escapeHtml(normalizeTitle(event.title))}</div>
                 <div class="bookmark-date">📅 ${escapeHtml(date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }))}</div>
                 <div class="bookmark-loc">📍 ${escapeHtml(event.location)}</div>
             </div>
@@ -1572,7 +1591,7 @@ function showSavesModal() {
             const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             return `
                 <div class="bookmark-row" onclick="openSavedEvent(${event.id})" style="cursor:pointer; position:relative;">
-                    <div class="bookmark-title">${escapeHtml(event.title)}</div>
+                    <div class="bookmark-title">${escapeHtml(normalizeTitle(event.title))}</div>
                     <div class="bookmark-date">📅 ${escapeHtml(dateStr)}</div>
                     <div class="bookmark-loc">📍 ${escapeHtml(event.location || '')}</div>
                     <button class="btn btn-danger" style="position:absolute; right:0; top:50%; transform:translateY(-50%); padding:4px 10px; font-size:12px;"
