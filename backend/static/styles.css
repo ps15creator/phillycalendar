@@ -1103,9 +1103,15 @@ body {
     align-items: center;
     gap: 4px;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     min-width: 0;
+}
+
+.loc-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
 }
 
 .event-row-price {

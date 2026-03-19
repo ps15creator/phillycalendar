@@ -711,8 +711,8 @@ function createEventRow(event, index) {
         ? startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
         : '';
     const categoryClass = `category-${event.category}`;
-    const BADGE_LABELS = {running:'Running', artsAndCulture:'Arts & Culture', music:'Music', foodAndDrink:'Food & Drink', community:'Community', other:'Other'};
-    const badgeLabel = BADGE_LABELS[event.category] || event.category;
+    const BADGE_LABELS = {running:'Running', artsAndCulture:'Arts & Culture', music:'Music', foodAndDrink:'Food & Drink', community:'Community', business:'Business', other:'Other'};
+    const badgeLabel = BADGE_LABELS[event.category] || (event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Other');
     const location = event.location || '';
     const price = event.price || '';
 
@@ -727,7 +727,7 @@ function createEventRow(event, index) {
                 <span class="event-category ${categoryClass}">${badgeLabel}</span>
             </div>
             <div class="event-row-meta">
-                ${location ? `<span class="event-row-location">${pinIcon} ${escapeHtml(location)}</span>` : ''}
+                ${location ? `<span class="event-row-location">${pinIcon}<span class="loc-text">${escapeHtml(location)}</span></span>` : ''}
                 ${location && price ? `<span class="meta-dot">·</span>` : ''}
                 ${price ? `<span class="event-row-price">${dollarIcon} ${escapeHtml(price)}</span>` : ''}
             </div>
