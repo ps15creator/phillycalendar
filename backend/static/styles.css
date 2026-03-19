@@ -495,7 +495,7 @@ body {
     display: flex;
     gap: 10px;
     width: max-content;
-    animation: nbhd-marquee 28s linear infinite;
+    animation: nbhd-marquee 60s linear infinite;
 }
 
 /* Pause on hover so users can click a pill */

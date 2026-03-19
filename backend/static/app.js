@@ -311,7 +311,14 @@ function buildNeighborhoodStrip() {
 
     // Step 2: events not matched by any known keyword → scan for new neighborhoods
     const allKnownKeywords = Object.values(NEIGHBORHOOD_KEYWORDS).flat();
-    const skipTerms = new Set(['philadelphia', 'pa', 'phila', 'united states', 'us', 'usa']);
+    // Terms to skip — not Philly neighborhoods
+    const skipTerms = new Set([
+        'philadelphia', 'pa', 'phila', 'united states', 'us', 'usa',
+        'allentown', 'pittsburgh', 'harrisburg', 'lancaster', 'reading',
+        'norristown', 'media', 'villanova', 'haverford', 'oaks',
+        'bala cynwyd', 'malvern', 'wayne', 'ardmore', 'paoli',
+        'conshohocken', 'ambler', 'doylestown', 'wilmington',
+    ]);
     const newNeighborhoods = new Map(); // display name → keyword
 
     allEvents.forEach(ev => {
@@ -324,9 +331,10 @@ function buildNeighborhoodStrip() {
             const lp = part.toLowerCase().trim();
             if (
                 !skipTerms.has(lp) &&
-                !/^\d/.test(part) &&
                 part.length > 2 &&
                 part.length < 35 &&
+                /^[A-Za-z][A-Za-z\s\-'\.]+$/.test(part) && // letters only — rejects phone numbers & digits
+                !part.includes(':') &&                       // rejects "PH: +1..." style labels
                 !NEIGHBORHOOD_KEYWORDS[part] &&
                 !newNeighborhoods.has(part)
             ) {
