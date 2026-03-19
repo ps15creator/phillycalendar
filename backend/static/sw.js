@@ -1,9 +1,9 @@
 // Service Worker for offline support
-const CACHE_NAME = 'philly-calendar-v21';
+const CACHE_NAME = 'philly-calendar-v22';
 const urlsToCache = [
     '/',
-    '/static/styles.css?v=21',
-    '/static/app.js?v=9'
+    '/static/styles.css?v=33',
+    '/static/app.js?v=11'
 ];
 
 // Install service worker
@@ -12,26 +12,33 @@ self.addEventListener('install', event => {
         caches.open(CACHE_NAME)
             .then(cache => cache.addAll(urlsToCache))
     );
+    self.skipWaiting();
 });
 
-// Cache events data
+// Network-first for API calls, cache-first for static assets
 self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                // Return cached version or fetch new
-                return response || fetch(event.request).then(fetchResponse => {
-                    // Cache API responses
-                    if (event.request.url.includes('/events')) {
-                        return caches.open(CACHE_NAME).then(cache => {
+    const url = event.request.url;
+    const isApi = url.includes('/events') || new URL(url).pathname.startsWith('/stats');
+
+    if (isApi) {
+        event.respondWith(
+            fetch(event.request)
+                .then(fetchResponse => {
+                    if (fetchResponse.ok) {
+                        caches.open(CACHE_NAME).then(cache => {
                             cache.put(event.request, fetchResponse.clone());
-                            return fetchResponse;
                         });
                     }
                     return fetchResponse;
-                });
-            })
-    );
+                })
+                .catch(() => caches.match(event.request))
+        );
+    } else {
+        event.respondWith(
+            caches.match(event.request)
+                .then(response => response || fetch(event.request))
+        );
+    }
 });
 
 // Clean up old caches
