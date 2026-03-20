@@ -921,28 +921,51 @@ function toggleDayExpand(e, dayId, extraCount) {
     const expanded = extra.classList.contains('expanded');
 
     if (expanded) {
-        // Collapse: pin to actual height first, then animate to 0
-        extra.style.maxHeight = extra.scrollHeight + 'px';
-        extra.style.opacity = '1';
-        extra.offsetHeight; // force reflow so browser registers starting value
-        extra.style.maxHeight = '0';
-        extra.style.opacity = '0';
-        extra.classList.remove('expanded');
-        btn.textContent = `Show ${extraCount} more ↓`;
+        // Collapse: fade rows out first, then close container
+        const rows = extra.querySelectorAll('.event-row');
+        rows.forEach(row => {
+            row.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(6px)';
+        });
+        setTimeout(() => {
+            extra.style.maxHeight = extra.scrollHeight + 'px';
+            extra.offsetHeight;
+            extra.style.maxHeight = '0';
+            extra.classList.remove('expanded');
+            btn.textContent = `Show ${extraCount} more ↓`;
+        }, 160);
         setTimeout(() => {
             document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 420);
+        }, 580);
     } else {
-        // Expand: animate from 0 to actual content height
+        // Expand: animate container height, then stagger rows in
+        const rows = extra.querySelectorAll('.event-row');
+        // Reset row states before expanding
+        rows.forEach(row => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(6px)';
+            row.style.transition = 'none';
+        });
+
         const targetHeight = extra.scrollHeight;
         extra.style.maxHeight = '0';
-        extra.style.opacity = '0';
+        extra.style.opacity = '1';
         extra.offsetHeight; // force reflow
         extra.style.maxHeight = targetHeight + 'px';
-        extra.style.opacity = '1';
         extra.classList.add('expanded');
-        // Clear inline max-height after transition so content can reflow freely
-        setTimeout(() => { extra.style.maxHeight = ''; }, 420);
+
+        // Stagger each row in with a 60ms delay between them
+        rows.forEach((row, i) => {
+            setTimeout(() => {
+                row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, 80 + i * 60);
+        });
+
+        // Clear inline max-height after transition
+        setTimeout(() => { extra.style.maxHeight = ''; }, 520);
         btn.textContent = 'Show less ↑';
     }
 }
