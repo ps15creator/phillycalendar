@@ -986,9 +986,10 @@ function collapseDayGroup(dayId, extraCount) {
     });
     const rowFadeTime = rows.length * 50 + 220;
     setTimeout(() => {
-        // Snap shut instantly once rows are invisible — no white space
-        extra.style.transition = 'none';
+        // Restore overflow and snap shut once rows are invisible
+        extra.style.overflow = 'hidden';
         extra.style.maxHeight = '0';
+        extra.style.transition = 'none';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
     }, rowFadeTime);
@@ -1033,14 +1034,13 @@ function toggleDayExpand(e, dayId, extraCount) {
             row.style.transition = 'none';
         });
 
-        // Open container instantly — no white space gap
+        // Remove height constraint so container grows naturally with rows
         extra.style.transition = 'none';
-        extra.style.maxHeight = extra.scrollHeight + 'px';
+        extra.style.maxHeight = 'none';
+        extra.style.overflow = 'visible';
         extra.classList.add('expanded');
-        extra.offsetHeight;
-        setTimeout(() => { extra.style.maxHeight = ''; }, 50);
 
-        // Stagger rows in
+        // Stagger rows in — container follows their natural height
         rows.forEach((row, i) => {
             setTimeout(() => {
                 row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
