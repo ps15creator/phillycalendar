@@ -1175,8 +1175,10 @@ async function updateStats() {
         const data = await response.json();
 
         if (data.success) {
-            document.getElementById('totalEvents').textContent = data.stats.total_events;
-            document.getElementById('upcomingEvents').textContent = data.stats.upcoming_events;
+            const totalEl = document.getElementById('totalEvents');
+            const upcomingEl = document.getElementById('upcomingEvents');
+            if (totalEl) totalEl.textContent = data.stats.total_events;
+            if (upcomingEl) upcomingEl.textContent = data.stats.upcoming_events;
         }
     } catch (error) {
         console.error('Error loading stats:', error);
