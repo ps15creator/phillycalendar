@@ -997,7 +997,7 @@ function collapseDayGroup(dayId, extraCount) {
         extra.style.maxHeight = '0';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
-        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, totalFadeTime);
 }
 
@@ -1052,6 +1052,12 @@ function toggleDayExpand(e, dayId, extraCount) {
             row.style.display = '';
             row.offsetHeight; // force reflow so animation triggers fresh
             row.classList.add('row-fade-in');
+            // After last row is visible, scroll it into view
+            if (i === rows.length - 1) {
+                setTimeout(() => {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 120);
+            }
         }, i * 70);
     });
 
