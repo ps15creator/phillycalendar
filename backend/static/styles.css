@@ -1286,16 +1286,10 @@ body {
     min-width: 0;
 }
 
-/* Per-day extra rows — animated expand/collapse */
+/* Per-day extra rows — height and opacity driven by JS */
 .day-extra-rows {
     overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    transition: max-height 0.35s ease, opacity 0.25s ease;
-}
-.day-extra-rows.expanded {
-    max-height: 2000px; /* large enough for any day */
-    opacity: 1;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
 }
 
 /* Show more / Show less per-day toggle */

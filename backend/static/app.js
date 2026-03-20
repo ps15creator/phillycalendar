@@ -857,7 +857,7 @@ function renderGroupedByDay(events) {
         const dayId   = `day-${key.replace(/-/g, '')}`;
 
         const extraHtml = extra.length > 0 ? `
-            <div class="day-extra-rows" id="${dayId}-extra">
+            <div class="day-extra-rows" id="${dayId}-extra" style="max-height:0;opacity:0;">
                 ${extra.map(({ event, index }) => createEventRow(event, index)).join('')}
             </div>
             <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand(event, '${dayId}', ${extra.length})">
@@ -921,14 +921,28 @@ function toggleDayExpand(e, dayId, extraCount) {
     const expanded = extra.classList.contains('expanded');
 
     if (expanded) {
+        // Collapse: pin to actual height first, then animate to 0
+        extra.style.maxHeight = extra.scrollHeight + 'px';
+        extra.style.opacity = '1';
+        extra.offsetHeight; // force reflow so browser registers starting value
+        extra.style.maxHeight = '0';
+        extra.style.opacity = '0';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
-        // Wait for collapse animation then scroll day header into view
         setTimeout(() => {
             document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 300);
+        }, 420);
     } else {
+        // Expand: animate from 0 to actual content height
+        const targetHeight = extra.scrollHeight;
+        extra.style.maxHeight = '0';
+        extra.style.opacity = '0';
+        extra.offsetHeight; // force reflow
+        extra.style.maxHeight = targetHeight + 'px';
+        extra.style.opacity = '1';
         extra.classList.add('expanded');
+        // Clear inline max-height after transition so content can reflow freely
+        setTimeout(() => { extra.style.maxHeight = ''; }, 420);
         btn.textContent = 'Show less ↑';
     }
 }
