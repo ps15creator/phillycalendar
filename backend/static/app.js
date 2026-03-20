@@ -255,7 +255,11 @@ async function loadEvents() {
         const response = await fetch(`${API_BASE}/events/upcoming`);
         const data = await response.json();
 
-        if (data.success) {
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
+
+        if (data.success || Array.isArray(data.events)) {
             // Filter out any events before today's midnight in local time
             const todayMidnight = new Date();
             todayMidnight.setHours(0, 0, 0, 0);
@@ -279,6 +283,7 @@ async function loadEvents() {
         }
     } catch (error) {
         console.error('Error loading events:', error);
+        showNotification('Failed to load events. Please try again.', 'error');
         showEmptyState();
     } finally {
         showLoading(false);
@@ -413,21 +418,26 @@ function buildHottestCards() {
     }).join('');
 }
 
-// Scrape new events
+// Scrape new events (admin only — requires scrape button in DOM and auth token)
 async function scrapeNewEvents() {
     const btn = document.getElementById('scrapeBtn');
+    if (!btn) return;
     btn.disabled = true;
     btn.textContent = '🤖 Scraping...';
 
     try {
+        const scrapeToken = sessionStorage.getItem('scrapeToken') || '';
         const response = await fetch(`${API_BASE}/scrape`, {
-            method: 'POST'
+            method: 'POST',
+            headers: scrapeToken ? { 'X-Scrape-Token': scrapeToken } : {}
         });
         const data = await response.json();
 
         if (data.success) {
             showNotification(`✅ Scraped ${data.total_added} new events!`);
             await loadEvents();
+        } else {
+            showNotification('❌ Scraping failed: ' + (data.error || 'unknown error'), 'error');
         }
     } catch (error) {
         console.error('Error scraping:', error);
@@ -1292,6 +1302,7 @@ function getCategoryName(category) {
         'music': '🎵 Music & Nightlife',
         'foodAndDrink': '🍽️ Food & Drink',
         'community': '👥 Community & Social',
+        'business': '💼 Business',
         'other': '⭐ Other'
     };
     return names[category] || category;
