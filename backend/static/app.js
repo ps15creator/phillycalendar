@@ -921,23 +921,28 @@ function toggleDayExpand(e, dayId, extraCount) {
     const expanded = extra.classList.contains('expanded');
 
     if (expanded) {
-        // Collapse: fade rows out first, then close container
-        const rows = extra.querySelectorAll('.event-row');
-        rows.forEach(row => {
-            row.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(6px)';
+        // Collapse: stagger rows out bottom-to-top, then close container
+        const rows = Array.from(extra.querySelectorAll('.event-row'));
+        rows.reverse().forEach((row, i) => {
+            setTimeout(() => {
+                row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(6px)';
+            }, i * 50);
         });
+        const rowFadeTime = rows.length * 50 + 200;
         setTimeout(() => {
-            extra.style.maxHeight = extra.scrollHeight + 'px';
+            const currentHeight = extra.scrollHeight;
+            extra.style.maxHeight = currentHeight + 'px';
             extra.offsetHeight;
+            extra.style.transition = 'max-height 0.5s ease';
             extra.style.maxHeight = '0';
             extra.classList.remove('expanded');
             btn.textContent = `Show ${extraCount} more ↓`;
-        }, 160);
+        }, rowFadeTime);
         setTimeout(() => {
             document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 580);
+        }, rowFadeTime + 520);
     } else {
         // Expand: animate container height, then stagger rows in
         const rows = extra.querySelectorAll('.event-row');
@@ -964,8 +969,11 @@ function toggleDayExpand(e, dayId, extraCount) {
             }, 80 + i * 60);
         });
 
-        // Clear inline max-height after transition
-        setTimeout(() => { extra.style.maxHeight = ''; }, 520);
+        // Clear inline styles after transition so container is ready for next collapse
+        setTimeout(() => {
+            extra.style.maxHeight = '';
+            extra.style.transition = '';
+        }, 520);
         btn.textContent = 'Show less ↑';
     }
 }
