@@ -860,7 +860,7 @@ function renderGroupedByDay(events) {
         const dayId   = `day-${key.replace(/-/g, '')}`;
 
         const extraHtml = extra.length > 0 ? `
-            <div class="day-extra-rows" id="${dayId}-extra" style="max-height:0;opacity:0;">
+            <div class="day-extra-rows" id="${dayId}-extra" style="max-height:0;overflow:hidden;">
                 ${extra.map(({ event, index }) => createEventRow(event, index)).join('')}
             </div>
             <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand(event, '${dayId}', ${extra.length})">
@@ -979,17 +979,18 @@ function collapseDayGroup(dayId, extraCount) {
     const rows = Array.from(extra.querySelectorAll('.event-row'));
     rows.reverse().forEach((row, i) => {
         setTimeout(() => {
-            row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(6px)';
+            row.classList.remove('row-fade-in');
+            row.classList.add('row-fade-out');
+            setTimeout(() => {
+                row.style.display = 'none';
+                row.classList.remove('row-fade-out');
+            }, 220);
         }, i * 50);
     });
-    const rowFadeTime = rows.length * 50 + 220;
+    const rowFadeTime = rows.length * 50 + 240;
     setTimeout(() => {
-        // Restore overflow and snap shut once rows are invisible
         extra.style.overflow = 'hidden';
         extra.style.maxHeight = '0';
-        extra.style.transition = 'none';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
     }, rowFadeTime);
@@ -1026,27 +1027,20 @@ function toggleDayExpand(e, dayId, extraCount) {
 
         expandedDayId = dayId;
 
-        // Expand: set full height instantly, stagger rows in
-        const rows = extra.querySelectorAll('.event-row');
-        rows.forEach(row => {
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(6px)';
-            row.style.transition = 'none';
-        });
-
-        // Remove height constraint so container grows naturally with rows
-        extra.style.transition = 'none';
+        // Ensure container is fully open with no constraints
         extra.style.maxHeight = 'none';
         extra.style.overflow = 'visible';
         extra.classList.add('expanded');
 
-        // Stagger rows in — container follows their natural height
+        // Stagger rows in using display — no space taken until row appears
+        const rows = extra.querySelectorAll('.event-row');
+        rows.forEach(row => { row.style.display = 'none'; });
+
         rows.forEach((row, i) => {
             setTimeout(() => {
-                row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-                row.style.opacity = '1';
-                row.style.transform = 'translateY(0)';
-            }, 30 + i * 60);
+                row.style.display = '';
+                row.classList.add('row-fade-in');
+            }, i * 70);
         });
 
         btn.textContent = 'Show less ↑';

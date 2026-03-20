@@ -1292,16 +1292,17 @@ body {
     transition: max-height 0.5s ease, opacity 0.35s ease;
 }
 
-/* Each event row inside the extra container staggers in */
-.day-extra-rows .event-row {
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
+/* Row appear/disappear animations */
+@keyframes rowIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
-.day-extra-rows.expanded .event-row {
-    opacity: 1;
-    transform: translateY(0);
+@keyframes rowOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(8px); }
 }
+.row-fade-in  { animation: rowIn  0.22s ease forwards; }
+.row-fade-out { animation: rowOut 0.18s ease forwards; }
 
 /* Show more / Show less per-day toggle */
 .show-more-btn {
