@@ -126,8 +126,7 @@ body {
 }
 
 .header-red-line {
-    height: 3px;
-    background: var(--red);
+    display: none;
 }
 
 .header-nav {
@@ -1145,7 +1144,18 @@ body {
 }
 
 .day-header.today {
+    background: var(--green-dark);
+}
+
+.today-badge {
     background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
 }
 
 .day-header-left {
@@ -1252,6 +1262,13 @@ body {
     background: #f3f4f6;
     color: #374151;
 }
+.category-running        { background: #dcfce7; color: #166534; }
+.category-artsAndCulture { background: #dbeafe; color: #1e40af; }
+.category-music          { background: #fef9c3; color: #854d0e; }
+.category-foodAndDrink   { background: #fee2e2; color: #991b1b; }
+.category-community      { background: #f3e8ff; color: #6b21a8; }
+.category-business       { background: #e0f2fe; color: #075985; }
+.category-other          { background: #f3f4f6; color: #374151; }
 
 /* Meta row: location · price — clean single line */
 .event-row-meta {

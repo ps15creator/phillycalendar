@@ -131,6 +131,14 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
+// Decode HTML entities from backend data (e.g. &#8211; → —)
+function decodeHtmlEntities(str) {
+    if (!str) return '';
+    const txt = document.createElement('textarea');
+    txt.innerHTML = String(str);
+    return txt.value;
+}
+
 // Strip HTML tags from a string (for descriptions that contain raw HTML)
 function stripHtml(str) {
     if (!str) return '';
@@ -882,6 +890,7 @@ function renderGroupedByDay(events) {
         <div class="day-group" id="${dayId}">
             <div class="day-header${isToday ? ' today' : ''}">
                 <div class="day-header-left">
+                    ${isToday ? '<span class="today-badge">TODAY</span>' : ''}
                     <span class="day-weekday">${label}</span>
                     <span class="day-date">${shortDate}</span>
                 </div>
@@ -914,7 +923,7 @@ function createEventRow(event, index) {
     <div class="event-row" data-event-index="${index}">
         <div class="event-details-col">
             <div class="event-row-top">
-                <span class="event-row-title">${escapeHtml(normalizeTitle(event.title))}</span>
+                <span class="event-row-title">${escapeHtml(normalizeTitle(decodeHtmlEntities(event.title)))}</span>
                 <span class="event-category ${categoryClass}">${badgeLabel}</span>
             </div>
             <div class="event-row-meta">
@@ -1086,7 +1095,7 @@ function showEventDetail(event) {
     }
 
     modalBody.innerHTML = `
-        <h2 class="modal-title" id="eventModalTitle">${escapeHtml(normalizeTitle(event.title))}</h2>
+        <h2 class="modal-title" id="eventModalTitle">${escapeHtml(normalizeTitle(decodeHtmlEntities(event.title)))}</h2>
 
         <div class="modal-detail">
             <strong>📅 Date & Time</strong><br>
@@ -1476,7 +1485,7 @@ function showBookmarks() {
         const date = parseLocalDate(event.start_date);
         return `
             <div class="bookmark-row" onclick="showBookmarkedEvent(${event.id})" style="cursor:pointer">
-                <div class="bookmark-title">${escapeHtml(normalizeTitle(event.title))}</div>
+                <div class="bookmark-title">${escapeHtml(normalizeTitle(decodeHtmlEntities(event.title)))}</div>
                 <div class="bookmark-date">📅 ${escapeHtml(date.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }))}</div>
                 <div class="bookmark-loc">📍 ${escapeHtml(event.location)}</div>
             </div>
@@ -1819,7 +1828,7 @@ function showSavesModal() {
             const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             return `
                 <div class="bookmark-row" onclick="openSavedEvent(${event.id})" style="cursor:pointer; position:relative;">
-                    <div class="bookmark-title">${escapeHtml(normalizeTitle(event.title))}</div>
+                    <div class="bookmark-title">${escapeHtml(normalizeTitle(decodeHtmlEntities(event.title)))}</div>
                     <div class="bookmark-date">📅 ${escapeHtml(dateStr)}</div>
                     <div class="bookmark-loc">📍 ${escapeHtml(event.location || '')}</div>
                     <button class="btn btn-danger" style="position:absolute; right:0; top:50%; transform:translateY(-50%); padding:4px 10px; font-size:12px;"
