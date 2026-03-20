@@ -984,19 +984,17 @@ function collapseDayGroup(dayId, extraCount) {
             row.style.transform = 'translateY(6px)';
         }, i * 50);
     });
-    const rowFadeTime = rows.length * 50 + 200;
+    const rowFadeTime = rows.length * 50 + 220;
     setTimeout(() => {
-        const currentHeight = extra.scrollHeight;
-        extra.style.maxHeight = currentHeight + 'px';
-        extra.offsetHeight;
-        extra.style.transition = 'max-height 0.5s ease';
+        // Snap shut instantly once rows are invisible — no white space
+        extra.style.transition = 'none';
         extra.style.maxHeight = '0';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
     }, rowFadeTime);
     setTimeout(() => {
         document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, rowFadeTime + 520);
+    }, rowFadeTime + 100);
 }
 
 // Toggle per-day expand / collapse
@@ -1027,7 +1025,7 @@ function toggleDayExpand(e, dayId, extraCount) {
 
         expandedDayId = dayId;
 
-        // Expand: animate container height, then stagger rows in
+        // Expand: set full height instantly, stagger rows in
         const rows = extra.querySelectorAll('.event-row');
         rows.forEach(row => {
             row.style.opacity = '0';
@@ -1035,25 +1033,21 @@ function toggleDayExpand(e, dayId, extraCount) {
             row.style.transition = 'none';
         });
 
-        const targetHeight = extra.scrollHeight;
-        extra.style.maxHeight = '0';
-        extra.style.opacity = '1';
-        extra.offsetHeight;
-        extra.style.maxHeight = targetHeight + 'px';
+        // Open container instantly — no white space gap
+        extra.style.transition = 'none';
+        extra.style.maxHeight = extra.scrollHeight + 'px';
         extra.classList.add('expanded');
+        extra.offsetHeight;
+        setTimeout(() => { extra.style.maxHeight = ''; }, 50);
 
+        // Stagger rows in
         rows.forEach((row, i) => {
             setTimeout(() => {
                 row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
                 row.style.opacity = '1';
                 row.style.transform = 'translateY(0)';
-            }, 80 + i * 60);
+            }, 30 + i * 60);
         });
-
-        setTimeout(() => {
-            extra.style.maxHeight = '';
-            extra.style.transition = '';
-        }, 520);
 
         btn.textContent = 'Show less ↑';
 
