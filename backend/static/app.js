@@ -8,6 +8,7 @@ let currentMonth = 'all';
 let currentNeighborhood = 'all';
 let currentTimeFilter = null; // null | 'today' | 'tomorrow' | 'weekend'
 let expandedDayId = null;     // ID of currently expanded day group (only one at a time)
+let expandScrollTimer = null; // pending scroll-to-last-row timer (cancel on collapse)
 
 // Category badge labels (text-only, no emoji — keeps pills compact on mobile)
 const BADGE_LABELS = {
@@ -973,6 +974,9 @@ function collapseDayGroup(dayId, extraCount) {
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
 
+    // Cancel any pending scroll-to-last-row from the expand animation
+    if (expandScrollTimer) { clearTimeout(expandScrollTimer); expandScrollTimer = null; }
+
     hideCollapsePill();
     expandedDayId = null;
 
@@ -1054,7 +1058,8 @@ function toggleDayExpand(e, dayId, extraCount) {
             row.classList.add('row-fade-in');
             // After last row is visible, scroll it into view
             if (i === rows.length - 1) {
-                setTimeout(() => {
+                expandScrollTimer = setTimeout(() => {
+                    expandScrollTimer = null;
                     row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }, 120);
             }
