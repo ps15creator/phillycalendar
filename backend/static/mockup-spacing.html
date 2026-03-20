@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spacing Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; padding: 32px 16px; }
+
+  h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 8px; }
+  p.desc { font-size: 14px; color: #666; margin-bottom: 40px; }
+
+  .options { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
+
+  .option { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.12); width: 340px; }
+  .option-label { background: #1a1a1a; color: white; font-size: 13px; font-weight: 700; padding: 10px 16px; letter-spacing: 0.05em; }
+  .option-label span { color: #fbbf24; }
+
+  /* Simulated event row */
+  .event-row { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; background: white; }
+  .event-title { font-weight: 600; font-size: 14px; color: #111; }
+  .event-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+
+  /* Load more button */
+  .load-more-btn {
+    display: block;
+    margin: 0 auto;
+    background: #004C54;
+    color: white;
+    padding: 13px 32px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Footer */
+  .site-footer {
+    background: linear-gradient(180deg, #003a42 0%, #002d35 100%);
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    font-size: 12px;
+    border-top: 3px solid #E81828;
+    padding: 24px 20px;
+  }
+  .footer-brand { color: white; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .footer-brand a { color: #fbbf24; text-decoration: none; }
+  .footer-sub { color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6; }
+  .footer-sub a { color: #fbbf24; text-decoration: none; }
+
+  /* Option A — Tight (current is too much, this is snug) */
+  .option-a .load-more-wrapper { padding: 16px 16px 16px; }
+  .option-a .site-footer { margin-top: 16px; }
+
+  /* Option B — Balanced */
+  .option-b .load-more-wrapper { padding: 24px 16px 20px; }
+  .option-b .site-footer { margin-top: 24px; }
+
+  /* Option C — Current (too much) */
+  .option-c .load-more-wrapper { padding: 32px 16px 16px; }
+  .option-c .site-footer { margin-top: 48px; }
+
+  .gap-label {
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    padding: 4px 0;
+    background: #f9fafb;
+    border: 1px dashed #e5e7eb;
+    margin: 0 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Spacing Options — Load More → Footer</h1>
+<p class="desc">Three options for the gap between the "Load More Events" button and the footer. Shown at mobile width (340px).</p>
+
+<div class="options">
+
+  <!-- Option A: Tight -->
+  <div class="option option-a">
+    <div class="option-label">Option A — <span>Tight (snug)</span></div>
+    <div class="event-row"><div class="event-title">Philly Comedy Night</div><div class="event-meta">📍 South Street · 8:00 PM</div></div>
+    <div class="event-row"><div class="event-title">Jazz at the Kimmel Center</div><div class="event-meta">📍 Broad St · 7:30 PM</div></div>
+    <div class="load-more-wrapper">
+      <button class="load-more-btn">Load More Events</button>
+    </div>
+    <div class="gap-label">↕ ~32px total gap</div>
+    <div class="site-footer">
+      <div class="footer-brand">🦅 <a href="#">whatsonphilly.com</a></div>
+      <div class="footer-sub">© 2026 <a href="#">Palak Sharma</a> · Made with ❤️ in Philly</div>
+    </div>
+  </div>
+
+  <!-- Option B: Balanced -->
+  <div class="option option-b">
+    <div class="option-label">Option B — <span>Balanced (recommended)</span></div>
+    <div class="event-row"><div class="event-title">Philly Comedy Night</div><div class="event-meta">📍 South Street · 8:00 PM</div></div>
+    <div class="event-row"><div class="event-title">Jazz at the Kimmel Center</div><div class="event-meta">📍 Broad St · 7:30 PM</div></div>
+    <div class="load-more-wrapper">
+      <button class="load-more-btn">Load More Events</button>
+    </div>
+    <div class="gap-label">↕ ~44px total gap</div>
+    <div class="site-footer">
+      <div class="footer-brand">🦅 <a href="#">whatsonphilly.com</a></div>
+      <div class="footer-sub">© 2026 <a href="#">Palak Sharma</a> · Made with ❤️ in Philly</div>
+    </div>
+  </div>
+
+  <!-- Option C: Current -->
+  <div class="option option-c">
+    <div class="option-label">Option C — <span>Current (too much)</span></div>
+    <div class="event-row"><div class="event-title">Philly Comedy Night</div><div class="event-meta">📍 South Street · 8:00 PM</div></div>
+    <div class="event-row"><div class="event-title">Jazz at the Kimmel Center</div><div class="event-meta">📍 Broad St · 7:30 PM</div></div>
+    <div class="load-more-wrapper">
+      <button class="load-more-btn">Load More Events</button>
+    </div>
+    <div class="gap-label">↕ ~96px total gap</div>
+    <div class="site-footer">
+      <div class="footer-brand">🦅 <a href="#">whatsonphilly.com</a></div>
+      <div class="footer-sub">© 2026 <a href="#">Palak Sharma</a> · Made with ❤️ in Philly</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
