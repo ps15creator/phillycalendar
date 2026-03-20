@@ -993,28 +993,26 @@ function collapseDayGroup(dayId, extraCount) {
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
 
-    // Cancel any pending scroll-to-last-row from the expand animation
-    if (expandScrollTimer) { clearTimeout(expandScrollTimer); expandScrollTimer = null; }
-
     hideCollapsePill();
     expandedDayId = null;
 
-    // Collapse instantly — no scroll, no animation
-    // The browser's scroll anchoring keeps the user's view stable naturally
-    Array.from(extra.querySelectorAll('.event-row')).forEach(row => {
-        row.style.display = 'none';
-        row.classList.remove('row-fade-in', 'row-fade-out');
-    });
-    extra.style.overflow = 'hidden';
-    extra.style.maxHeight = '0';
-    extra.classList.remove('expanded');
-    btn.textContent = `Show ${extraCount} more ↓`;
-
-    // Scroll back to day header smoothly
+    // Scroll to day header FIRST — before collapsing — so page height drop doesn't cause a snap
     const dayGroup = document.getElementById(dayId);
     if (dayGroup) {
         dayGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
+    // Collapse after scroll has had time to start
+    setTimeout(() => {
+        Array.from(extra.querySelectorAll('.event-row')).forEach(row => {
+            row.style.display = 'none';
+            row.classList.remove('row-fade-in', 'row-fade-out');
+        });
+        extra.style.overflow = 'hidden';
+        extra.style.maxHeight = '0';
+        extra.classList.remove('expanded');
+        btn.textContent = `Show ${extraCount} more ↓`;
+    }, 350);
 }
 
 // Toggle per-day expand / collapse
