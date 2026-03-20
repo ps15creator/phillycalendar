@@ -860,7 +860,7 @@ function renderGroupedByDay(events) {
             <div class="day-extra-rows" id="${dayId}-extra">
                 ${extra.map(({ event, index }) => createEventRow(event, index)).join('')}
             </div>
-            <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand('${dayId}', ${extra.length})">
+            <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand(event, '${dayId}', ${extra.length})">
                 Show ${extra.length} more ↓
             </button>` : '';
 
@@ -913,7 +913,8 @@ function createEventRow(event, index) {
 }
 
 // Toggle per-day expand / collapse
-function toggleDayExpand(dayId, extraCount) {
+function toggleDayExpand(e, dayId, extraCount) {
+    e.stopPropagation();
     const extra = document.getElementById(dayId + '-extra');
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
