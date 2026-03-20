@@ -5,7 +5,6 @@ let allEvents = [];
 let filteredEvents = [];
 let currentCategory = 'all';
 let currentMonth = 'all';
-let currentSource = 'all';
 let currentNeighborhood = 'all';
 
 // Category badge labels (text-only, no emoji — keeps pills compact on mobile)
@@ -152,7 +151,6 @@ function setupEventListeners() {
     const refreshBtn = document.getElementById('refreshBtn');
     if (refreshBtn) refreshBtn.addEventListener('click', refreshEvents);
     document.getElementById('monthSelect').addEventListener('change', handleMonthFilter);
-    document.getElementById('sourceSelect').addEventListener('change', handleSourceFilter);
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => handleFilter(e.target.dataset.category));
@@ -275,7 +273,6 @@ async function loadEvents() {
             });
             filteredEvents = allEvents;
             populateMonthFilter();
-            populateSourceFilter();
             renderEvents();
             updateStats();
             // Update hero event count
@@ -431,24 +428,17 @@ function handleMonthFilter(e) {
     applyFilters();
 }
 
-// Handle source filter
-function handleSourceFilter(e) {
-    currentSource = e.target.value;
-    applyFilters();
-}
 
 // Clear all filters and search (used by empty state)
 function clearFilters() {
     currentCategory = 'all';
     currentMonth = 'all';
-    currentSource = 'all';
     currentNeighborhood = 'all';
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.category === 'all');
     });
     document.querySelectorAll('.nbhd-pill').forEach(pill => pill.classList.remove('active'));
     document.getElementById('monthSelect').value = 'all';
-    document.getElementById('sourceSelect').value = 'all';
     document.getElementById('searchInput').value = '';
     const inlineClear = document.getElementById('inlineClearBtn');
     if (inlineClear) inlineClear.style.display = 'none';
@@ -485,13 +475,6 @@ function updateActiveFiltersBar() {
         active.push({ label: '📅 ' + monthName, key: 'month', clear: () => {
             currentMonth = 'all';
             document.getElementById('monthSelect').value = 'all';
-            applyFilters();
-        }});
-    }
-    if (currentSource !== 'all') {
-        active.push({ label: '🔍 ' + currentSource, key: 'source', clear: () => {
-            currentSource = 'all';
-            document.getElementById('sourceSelect').value = 'all';
             applyFilters();
         }});
     }
@@ -540,16 +523,14 @@ function applyFilters() {
             matchesMonth = eventMonthYear === currentMonth;
         }
 
-        const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
-
-        let matchesNeighborhood = true;
+let matchesNeighborhood = true;
         if (currentNeighborhood !== 'all') {
             const keywords = NEIGHBORHOOD_KEYWORDS[currentNeighborhood] || [];
             const loc = (event.location || '').toLowerCase();
             matchesNeighborhood = keywords.some(kw => loc.includes(kw));
         }
 
-        return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood;
+        return matchesCategory && matchesMonth && matchesNeighborhood;
     });
 
     updateActiveFiltersBar();
@@ -585,35 +566,6 @@ function populateMonthFilter() {
     });
 }
 
-// Populate source filter dropdown
-function populateSourceFilter() {
-    const sourceSelect = document.getElementById('sourceSelect');
-    const sources = new Set();
-
-    allEvents.forEach(event => {
-        // Only add non-empty, non-null source names
-        if (event.source && event.source.trim()) {
-            sources.add(event.source.trim());
-        }
-    });
-
-    const sortedSources = Array.from(sources).sort();
-
-    // Clear existing options and reset to "All Sources"
-    sourceSelect.innerHTML = '<option value="all">All Sources</option>';
-
-    // Add source options
-    sortedSources.forEach(source => {
-        const option = document.createElement('option');
-        option.value = source;
-        option.textContent = source;
-        sourceSelect.appendChild(option);
-    });
-
-    // Reset selection to "All Sources" on reload
-    sourceSelect.value = 'all';
-    currentSource = 'all';
-}
 
 // Handle search
 function handleSearch(e) {
@@ -629,9 +581,7 @@ function handleSearch(e) {
             matchesMonth = eventMonthYear === currentMonth;
         }
 
-        const matchesSource = currentSource === 'all' || (event.source || '').trim() === currentSource;
-
-        let matchesNeighborhood = true;
+let matchesNeighborhood = true;
         if (currentNeighborhood !== 'all') {
             const keywords = NEIGHBORHOOD_KEYWORDS[currentNeighborhood] || [];
             const loc = (event.location || '').toLowerCase();
@@ -644,7 +594,7 @@ function handleSearch(e) {
             event.location.toLowerCase().includes(query)
         );
 
-        return matchesCategory && matchesMonth && matchesSource && matchesNeighborhood && matchesSearch;
+        return matchesCategory && matchesMonth && matchesNeighborhood && matchesSearch;
     });
 
     updateActiveFiltersBar();
