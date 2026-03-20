@@ -1302,7 +1302,7 @@ body {
     to   { opacity: 0; transform: translateY(8px); }
 }
 .row-fade-in  { animation: rowIn  0.22s ease forwards; }
-.row-fade-out { animation: rowOut 0.18s ease forwards; }
+.row-fade-out { animation: rowOut 0.15s ease forwards; }
 
 /* Show more / Show less per-day toggle */
 .show-more-btn {

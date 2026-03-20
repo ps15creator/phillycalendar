@@ -994,15 +994,23 @@ function collapseDayGroup(dayId, extraCount) {
     hideCollapsePill();
     expandedDayId = null;
 
-    // Snap all rows shut immediately — no stagger, feels instant and responsive
-    Array.from(extra.querySelectorAll('.event-row')).forEach(row => {
-        row.style.display = 'none';
-        row.classList.remove('row-fade-in', 'row-fade-out');
+    // Fade all rows out together (no stagger) — quick but not jarring
+    const rows = Array.from(extra.querySelectorAll('.event-row'));
+    rows.forEach(row => {
+        row.classList.remove('row-fade-in');
+        row.classList.add('row-fade-out');
     });
-    extra.style.overflow = 'hidden';
-    extra.style.maxHeight = '0';
-    extra.classList.remove('expanded');
-    btn.textContent = `Show ${extraCount} more ↓`;
+
+    setTimeout(() => {
+        rows.forEach(row => {
+            row.style.display = 'none';
+            row.classList.remove('row-fade-out');
+        });
+        extra.style.overflow = 'hidden';
+        extra.style.maxHeight = '0';
+        extra.classList.remove('expanded');
+        btn.textContent = `Show ${extraCount} more ↓`;
+    }, 150);
 }
 
 // Toggle per-day expand / collapse
