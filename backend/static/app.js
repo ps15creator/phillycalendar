@@ -187,17 +187,6 @@ function setupEventListeners() {
         if (e.target.id === 'profileModal') closeProfileModal();
     });
 
-    // --- FILTERS TOGGLE ---
-    const filtersToggleBtn = document.getElementById('filtersToggleBtn');
-    const filterRowWrap = document.getElementById('filterRowWrap');
-    if (filtersToggleBtn && filterRowWrap) {
-        filtersToggleBtn.addEventListener('click', () => {
-            const isOpen = filterRowWrap.style.display !== 'none';
-            filterRowWrap.style.display = isOpen ? 'none' : 'flex';
-            filtersToggleBtn.classList.toggle('active', !isOpen);
-            filtersToggleBtn.setAttribute('aria-expanded', String(!isOpen));
-        });
-    }
 
     // --- HAMBURGER MENU ---
     const hamburgerBtn = document.getElementById('hamburgerBtn');

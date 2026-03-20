@@ -130,10 +130,6 @@
                 <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 <input type="text" id="searchInput" placeholder="Search events, venues, artists..." aria-label="Search events, venues, artists">
                 <button id="searchClearBtn" class="search-clear-btn" onclick="document.getElementById('searchInput').value='';document.getElementById('searchInput').dispatchEvent(new Event('input'));" style="display:none;" aria-label="Clear search">✕</button>
-                <button class="filters-toggle-btn" id="filtersToggleBtn" aria-expanded="false" aria-controls="filterRowWrap">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                    Filters
-                </button>
             </div>
 
             <div class="filter-row" id="filterRowWrap">
@@ -158,19 +154,16 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Community
                 </button>
-                <!-- Inline clear button — visible whenever any filter is active -->
-                <button id="inlineClearBtn" class="inline-clear-btn" onclick="clearFilters()" style="display:none;" title="Clear all filters">
-                    ✕ Clear filters
-                </button>
-            </div>
-
-            <div class="controls-bottom">
                 <div class="select-wrap">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E81828" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <select id="monthSelect" class="month-select">
                         <option value="all">All Months</option>
                     </select>
                 </div>
+                <!-- Inline clear button — visible whenever any filter is active -->
+                <button id="inlineClearBtn" class="inline-clear-btn" onclick="clearFilters()" style="display:none;" title="Clear all filters">
+                    ✕ Clear filters
+                </button>
             </div>
         </div>
 
@@ -319,7 +312,7 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=18"></script>
+    <script src="/static/app.js?v=19"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
