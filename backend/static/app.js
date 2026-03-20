@@ -871,8 +871,8 @@ function renderGroupedByDay(events) {
         // Sort events within the day by start time ascending
         items.sort((a, b) => parseLocalDate(a.event.start_date) - parseLocalDate(b.event.start_date));
 
-        const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : weekday;
-        const shortDate = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        const label = isToday ? weekday : isTomorrow ? 'TOMORROW' : weekday;
+        const shortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
         const visible = items.slice(0, CAP);
         const extra   = items.slice(CAP);
@@ -1009,6 +1009,12 @@ function collapseDayGroup(dayId, extraCount) {
     extra.style.maxHeight = '0';
     extra.classList.remove('expanded');
     btn.textContent = `Show ${extraCount} more ↓`;
+
+    // Scroll back to day header smoothly
+    const dayGroup = document.getElementById(dayId);
+    if (dayGroup) {
+        dayGroup.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 // Toggle per-day expand / collapse
