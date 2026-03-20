@@ -1286,6 +1286,18 @@ body {
     min-width: 0;
 }
 
+/* Per-day extra rows — animated expand/collapse */
+.day-extra-rows {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.day-extra-rows.expanded {
+    max-height: 2000px; /* large enough for any day */
+    opacity: 1;
+}
+
 /* Show more / Show less per-day toggle */
 .show-more-btn {
     display: block;

@@ -857,7 +857,7 @@ function renderGroupedByDay(events) {
         const dayId   = `day-${key.replace(/-/g, '')}`;
 
         const extraHtml = extra.length > 0 ? `
-            <div class="day-extra-rows" id="${dayId}-extra" style="display:none;">
+            <div class="day-extra-rows" id="${dayId}-extra">
                 ${extra.map(({ event, index }) => createEventRow(event, index)).join('')}
             </div>
             <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand('${dayId}', ${extra.length})">
@@ -917,13 +917,18 @@ function toggleDayExpand(dayId, extraCount) {
     const extra = document.getElementById(dayId + '-extra');
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
-    const expanded = extra.style.display !== 'none';
-    extra.style.display = expanded ? 'none' : '';
-    btn.textContent = expanded ? `Show ${extraCount} more ↓` : 'Show less ↑';
+    const expanded = extra.classList.contains('expanded');
 
-    // After collapsing, scroll the day header back into view
     if (expanded) {
-        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        extra.classList.remove('expanded');
+        btn.textContent = `Show ${extraCount} more ↓`;
+        // Wait for collapse animation then scroll day header into view
+        setTimeout(() => {
+            document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 300);
+    } else {
+        extra.classList.add('expanded');
+        btn.textContent = 'Show less ↑';
     }
 }
 
