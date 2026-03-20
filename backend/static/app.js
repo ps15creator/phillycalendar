@@ -630,12 +630,14 @@ function renderEvents() {
 
     emptyState.style.display = 'none';
 
-    // Determine which events to show: next 14 days from today, or all if expanded
+    // Determine which events to show: next 7 days by default, or all if a filter is active / expanded
     let eventsToShow = filteredEvents;
     let hasMore = false;
 
-    if (!showAllEvents) {
-        // Cutoff = end of the day 7 days from today (23:59:59)
+    const hasActiveFilter = currentCategory !== 'all' || currentMonth !== 'all' || currentNeighborhood !== 'all';
+
+    if (!showAllEvents && !hasActiveFilter) {
+        // Unfiltered view: show only the next 7 days, with a "Load More" button for the rest
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() + 7);
         cutoffDate.setHours(23, 59, 59, 999);
