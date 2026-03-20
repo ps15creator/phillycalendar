@@ -1724,6 +1724,12 @@ body {
     color: white;
     margin-bottom: 8px;
 }
+.footer-brand a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 700;
+}
+.footer-brand a:hover { text-decoration: underline; }
 
 .footer-url a {
     color: var(--gold);
@@ -1736,9 +1742,14 @@ body {
 
 .footer-sub {
     font-size: 0.85em;
-    opacity: 0.6;
+    color: rgba(255,255,255,0.75);
     margin-top: 4px;
 }
+.footer-sub a {
+    color: var(--gold);
+    text-decoration: none;
+}
+.footer-sub a:hover { text-decoration: underline; }
 
 /* ============================================================
    SCROLL TO TOP
