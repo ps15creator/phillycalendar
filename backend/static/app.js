@@ -6,6 +6,7 @@ let filteredEvents = [];
 let currentCategory = 'all';
 let currentMonth = 'all';
 let currentNeighborhood = 'all';
+let currentTimeFilter = null; // null | 'today' | 'tomorrow' | 'weekend'
 
 // Category badge labels (text-only, no emoji — keeps pills compact on mobile)
 const BADGE_LABELS = {
@@ -271,6 +272,8 @@ async function loadEvents() {
             }
             // Rebuild neighborhood strip from live event data
             buildNeighborhoodStrip();
+            // Rebuild hottest this week cards
+            buildHottestCards();
         }
     } catch (error) {
         console.error('Error loading events:', error);
@@ -347,6 +350,67 @@ function buildNeighborhoodStrip() {
         allNames.map(n => pill(n, true)).join('');
 }
 
+// Build "Hottest This Week" neighborhood cards
+// Shows up to 4 neighborhoods with the most events in the next 7 days.
+function buildHottestCards() {
+    const container = document.getElementById('hottestCardsScroll');
+    const section = document.getElementById('hottestSection');
+    if (!container || !allEvents.length) return;
+
+    const now = new Date();
+    const sevenDaysOut = new Date(now);
+    sevenDaysOut.setDate(now.getDate() + 7);
+
+    // Count events per neighborhood for the next 7 days
+    const counts = {}; // neighborhoodName -> { count, titles[] }
+    allEvents.forEach(ev => {
+        const evDate = new Date(ev.start_datetime);
+        if (evDate < now || evDate > sevenDaysOut) return;
+        const loc = (ev.location || '').toLowerCase();
+        for (const [name, keywords] of Object.entries(NEIGHBORHOOD_KEYWORDS)) {
+            if (keywords.some(kw => loc.includes(kw))) {
+                if (!counts[name]) counts[name] = { count: 0, titles: [] };
+                counts[name].count++;
+                if (counts[name].titles.length < 3) {
+                    counts[name].titles.push(normalizeTitle(ev.title));
+                }
+                break; // assign to first matching neighborhood only
+            }
+        }
+    });
+
+    // Sort by event count descending, take top 4
+    const top = Object.entries(counts)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 4);
+
+    if (!top.length) {
+        if (section) section.style.display = 'none';
+        return;
+    }
+
+    if (section) section.style.display = '';
+
+    container.innerHTML = top.map(([name, data], i) => {
+        const shown = data.titles.slice(0, 2);
+        const extra = data.count - shown.length;
+        const moreHtml = extra > 0
+            ? `<div class="hottest-card-more">+${extra} more</div>`
+            : '<div class="hottest-card-more">&nbsp;</div>';
+        return `
+        <div class="hottest-card hc-${i}" onclick="handleNeighborhoodFilter('${name}')" role="button" tabindex="0" aria-label="${name}, ${data.count} events this week">
+            <div>
+                <div class="hottest-card-name">${escapeHtml(name)}</div>
+                <ul class="hottest-card-events">
+                    ${shown.map(t => `<li>${escapeHtml(t)}</li>`).join('')}
+                </ul>
+                ${moreHtml}
+            </div>
+            <div class="hottest-card-count">${data.count} event${data.count !== 1 ? 's' : ''} →</div>
+        </div>`;
+    }).join('');
+}
+
 // Scrape new events
 async function scrapeNewEvents() {
     const btn = document.getElementById('scrapeBtn');
@@ -409,12 +473,55 @@ function handleFilter(category) {
     });
 
     applyFilters();
+
+    // If triggered from hero pills, scroll to the events list
+    document.querySelector('.page-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Handle month filter
+// Handle month filter — clears any active time filter since they're mutually exclusive
 function handleMonthFilter(e) {
     currentMonth = e.target.value;
+    if (currentTimeFilter) clearTimeFilter(false); // clear time pills without re-running filters
     applyFilters();
+}
+
+// Handle time filter pills (Today / Tomorrow / This Weekend)
+function handleTimeFilter(value) {
+    // Toggle off if same pill clicked again
+    if (currentTimeFilter === value) {
+        clearTimeFilter();
+        return;
+    }
+
+    currentTimeFilter = value;
+
+    // Update pill active states
+    document.querySelectorAll('.hero-time-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.time === value);
+    });
+
+    // Hide month dropdown — mutually exclusive
+    const monthWrap = document.getElementById('monthSelectWrap');
+    if (monthWrap) monthWrap.style.display = 'none';
+
+    // Clear month selection
+    currentMonth = 'all';
+    const monthSelect = document.getElementById('monthSelect');
+    if (monthSelect) monthSelect.value = 'all';
+
+    // Scroll to events list
+    document.querySelector('.page-wrapper')?.scrollIntoView({ behavior: 'smooth' });
+
+    applyFilters();
+}
+
+// Clear the time filter and restore month dropdown
+function clearTimeFilter(andApply = true) {
+    currentTimeFilter = null;
+    document.querySelectorAll('.hero-time-pill').forEach(btn => btn.classList.remove('active'));
+    const monthWrap = document.getElementById('monthSelectWrap');
+    if (monthWrap) monthWrap.style.display = '';
+    if (andApply) applyFilters();
 }
 
 
@@ -423,12 +530,16 @@ function clearFilters() {
     currentCategory = 'all';
     currentMonth = 'all';
     currentNeighborhood = 'all';
+    currentTimeFilter = null;
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.category === 'all');
     });
     document.querySelectorAll('.nbhd-pill').forEach(pill => pill.classList.remove('active'));
+    document.querySelectorAll('.hero-time-pill').forEach(btn => btn.classList.remove('active'));
     document.getElementById('monthSelect').value = 'all';
     document.getElementById('searchInput').value = '';
+    const monthWrap = document.getElementById('monthSelectWrap');
+    if (monthWrap) monthWrap.style.display = '';
     const inlineClear = document.getElementById('inlineClearBtn');
     if (inlineClear) inlineClear.style.display = 'none';
     const searchClear = document.getElementById('searchClearBtn');
@@ -449,6 +560,10 @@ function updateActiveFiltersBar() {
     const searchVal = (document.getElementById('searchInput')?.value || '').trim();
     const active = [];
 
+    if (currentTimeFilter) {
+        const labels = { today: 'Today', tomorrow: 'Tomorrow', weekend: 'This Weekend' };
+        active.push({ label: '🗓 ' + labels[currentTimeFilter], key: 'time', clear: () => clearTimeFilter() });
+    }
     if (currentCategory !== 'all') {
         const label = { running:'Running', music:'Music', artsAndCulture:'Arts & Culture',
                         foodAndDrink:'Food & Drink', community:'Community' }[currentCategory] || currentCategory;
@@ -458,7 +573,7 @@ function updateActiveFiltersBar() {
         const nb = currentNeighborhood;
         active.push({ label: '📍 ' + nb, key: 'nbhd', clear: () => handleNeighborhoodFilter(nb) });
     }
-    if (currentMonth !== 'all') {
+    if (!currentTimeFilter && currentMonth !== 'all') {
         const [y, m] = currentMonth.split('-');
         const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         active.push({ label: '📅 ' + monthName, key: 'month', clear: () => {
@@ -505,21 +620,51 @@ function applyFilters() {
     filteredEvents = allEvents.filter(event => {
         const matchesCategory = currentCategory === 'all' || event.category === currentCategory;
 
+        // Time filter (today/tomorrow/weekend) takes priority over month filter
+        let matchesTime = true;
+        if (currentTimeFilter) {
+            const evDate = parseLocalDate(event.start_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+
+            if (currentTimeFilter === 'today') {
+                const todayEnd = new Date(today);
+                todayEnd.setHours(23, 59, 59, 999);
+                matchesTime = evDate >= today && evDate <= todayEnd;
+            } else if (currentTimeFilter === 'tomorrow') {
+                const tomorrowEnd = new Date(tomorrow);
+                tomorrowEnd.setHours(23, 59, 59, 999);
+                matchesTime = evDate >= tomorrow && evDate <= tomorrowEnd;
+            } else if (currentTimeFilter === 'weekend') {
+                // Find nearest Saturday
+                const dayOfWeek = today.getDay(); // 0=Sun, 6=Sat
+                const daysToSat = dayOfWeek === 6 ? 0 : (6 - dayOfWeek);
+                const saturday = new Date(today);
+                saturday.setDate(today.getDate() + daysToSat);
+                const sunday = new Date(saturday);
+                sunday.setDate(saturday.getDate() + 1);
+                sunday.setHours(23, 59, 59, 999);
+                matchesTime = evDate >= saturday && evDate <= sunday;
+            }
+        }
+
         let matchesMonth = true;
-        if (currentMonth !== 'all') {
+        if (!currentTimeFilter && currentMonth !== 'all') {
             const eventDate = parseLocalDate(event.start_date);
             const eventMonthYear = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
             matchesMonth = eventMonthYear === currentMonth;
         }
 
-let matchesNeighborhood = true;
+        let matchesNeighborhood = true;
         if (currentNeighborhood !== 'all') {
             const keywords = NEIGHBORHOOD_KEYWORDS[currentNeighborhood] || [];
             const loc = (event.location || '').toLowerCase();
             matchesNeighborhood = keywords.some(kw => loc.includes(kw));
         }
 
-        return matchesCategory && matchesMonth && matchesNeighborhood;
+        return matchesCategory && matchesTime && matchesMonth && matchesNeighborhood;
     });
 
     updateActiveFiltersBar();

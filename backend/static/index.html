@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What's On Philly — Your City, Your Calendar</title>
     <meta name="description" content="Discover concerts, races, festivals, and neighborhood events across Philadelphia. One calendar, auto-updated every 4 hours.">
-    <link rel="stylesheet" href="/static/styles.css?v=34">
+    <link rel="stylesheet" href="/static/styles.css?v=35">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 </head>
 <body>
@@ -87,6 +87,14 @@
                     Community
                 </span>
             </div>
+            <div class="hero-time-row">
+                <span class="hero-time-label">When are you going out?</span>
+                <div class="hero-time-pills">
+                    <button class="hero-time-pill" data-time="today" onclick="handleTimeFilter('today')">Today</button>
+                    <button class="hero-time-pill" data-time="tomorrow" onclick="handleTimeFilter('tomorrow')">Tomorrow</button>
+                    <button class="hero-time-pill" data-time="weekend" onclick="handleTimeFilter('weekend')">This Weekend</button>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -112,6 +120,17 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hottest This Week — top neighborhoods by event count, next 7 days -->
+        <section class="hottest-section" id="hottestSection" aria-label="Hottest neighborhoods this week">
+            <div class="hottest-header">
+                <h2 class="hottest-title">Hottest This Week</h2>
+                <span class="hottest-sub">Top neighborhoods · next 7 days · updates automatically</span>
+            </div>
+            <div class="hottest-cards-scroll" id="hottestCardsScroll">
+                <!-- Cards injected by buildHottestCards() in app.js -->
+            </div>
+        </section>
 
         <main class="page-wrapper">
 
@@ -154,7 +173,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Community
                 </button>
-                <div class="select-wrap">
+                <div id="monthSelectWrap" class="select-wrap">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E81828" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <select id="monthSelect" class="month-select">
                         <option value="all">All Months</option>
@@ -312,7 +331,7 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=19"></script>
+    <script src="/static/app.js?v=20"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/static/sw.js')
