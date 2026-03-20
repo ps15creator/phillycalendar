@@ -976,27 +976,29 @@ function collapseDayGroup(dayId, extraCount) {
     hideCollapsePill();
     expandedDayId = null;
 
-    const rows = Array.from(extra.querySelectorAll('.event-row'));
-    rows.reverse().forEach((row, i) => {
+    // Fade rows out bottom-to-top, then set display:none so container shrinks naturally
+    const rows = Array.from(extra.querySelectorAll('.event-row')).reverse();
+    rows.forEach((row, i) => {
         setTimeout(() => {
             row.classList.remove('row-fade-in');
             row.classList.add('row-fade-out');
             setTimeout(() => {
                 row.style.display = 'none';
                 row.classList.remove('row-fade-out');
-            }, 220);
+            }, 180); // matches rowOut duration
         }, i * 50);
     });
-    const rowFadeTime = rows.length * 50 + 240;
+
+    const totalFadeTime = rows.length * 50 + 180;
     setTimeout(() => {
+        // All rows are display:none — container is naturally 0 height
+        // Just lock it back to overflow:hidden for the next expand cycle
         extra.style.overflow = 'hidden';
         extra.style.maxHeight = '0';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
-    }, rowFadeTime);
-    setTimeout(() => {
         document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, rowFadeTime + 100);
+    }, totalFadeTime);
 }
 
 // Toggle per-day expand / collapse
@@ -1006,48 +1008,55 @@ function toggleDayExpand(e, dayId, extraCount) {
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
 
-    // Store extraCount on button for pill to use
     btn.dataset.extraCount = extraCount;
-
     const expanded = extra.classList.contains('expanded');
 
     if (expanded) {
         collapseDayGroup(dayId, extraCount);
-    } else {
-        // If another day is expanded, collapse it first silently
-        if (expandedDayId && expandedDayId !== dayId) {
-            const prevExtra = document.getElementById(expandedDayId + '-extra');
-            const prevBtn   = document.getElementById(expandedDayId + '-toggle');
-            if (prevExtra && prevBtn) {
-                prevExtra.style.maxHeight = '0';
-                prevExtra.classList.remove('expanded');
-                prevBtn.textContent = `Show ${prevBtn.dataset.extraCount || '?'} more ↓`;
-            }
-        }
-
-        expandedDayId = dayId;
-
-        // Ensure container is fully open with no constraints
-        extra.style.maxHeight = 'none';
-        extra.style.overflow = 'visible';
-        extra.classList.add('expanded');
-
-        // Stagger rows in using display — no space taken until row appears
-        const rows = extra.querySelectorAll('.event-row');
-        rows.forEach(row => { row.style.display = 'none'; });
-
-        rows.forEach((row, i) => {
-            setTimeout(() => {
-                row.style.display = '';
-                row.classList.add('row-fade-in');
-            }, i * 70);
-        });
-
-        btn.textContent = 'Show less ↑';
-
-        // Show floating collapse pill
-        showCollapsePill(dayId, getDayLabel(dayId));
+        return;
     }
+
+    // Silently reset any previously expanded day
+    if (expandedDayId && expandedDayId !== dayId) {
+        const prevExtra = document.getElementById(expandedDayId + '-extra');
+        const prevBtn   = document.getElementById(expandedDayId + '-toggle');
+        if (prevExtra && prevBtn) {
+            Array.from(prevExtra.querySelectorAll('.event-row')).forEach(r => {
+                r.style.display = 'none';
+                r.classList.remove('row-fade-in', 'row-fade-out');
+            });
+            prevExtra.style.overflow = 'hidden';
+            prevExtra.style.maxHeight = '0';
+            prevExtra.classList.remove('expanded');
+            prevBtn.textContent = `Show ${prevBtn.dataset.extraCount || '?'} more ↓`;
+        }
+    }
+
+    expandedDayId = dayId;
+
+    // STEP 1: Hide all rows while container is still overflow:hidden (correct order — no flash)
+    const rows = Array.from(extra.querySelectorAll('.event-row'));
+    rows.forEach(row => {
+        row.style.display = 'none';
+        row.classList.remove('row-fade-in', 'row-fade-out');
+    });
+
+    // STEP 2: Open container — rows are display:none so no white space
+    extra.style.maxHeight = 'none';
+    extra.style.overflow = 'visible';
+    extra.classList.add('expanded');
+
+    // STEP 3: Stagger rows in one by one — container grows naturally with each
+    rows.forEach((row, i) => {
+        setTimeout(() => {
+            row.style.display = '';
+            row.offsetHeight; // force reflow so animation triggers fresh
+            row.classList.add('row-fade-in');
+        }, i * 70);
+    });
+
+    btn.textContent = 'Show less ↑';
+    showCollapsePill(dayId, getDayLabel(dayId));
 }
 
 // Show event detail modal
