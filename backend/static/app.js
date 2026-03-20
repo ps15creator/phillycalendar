@@ -836,22 +836,36 @@ function renderGroupedByDay(events) {
         return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
     })();
 
+    const CAP = 5;
+
     return dayOrder.map(key => {
         const [year, month, day] = key.split('-').map(Number);
         const d = new Date(year, month - 1, day);
         const weekday = d.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-        const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
         const items = byDay[key];
         const isToday = key === tKey;
         const isTomorrow = key === tomorrowKey;
 
-        // Label: TODAY / TOMORROW / WEEKDAY
+        // Sort events within the day by start time ascending
+        items.sort((a, b) => parseLocalDate(a.event.start_date) - parseLocalDate(b.event.start_date));
+
         const label = isToday ? 'TODAY' : isTomorrow ? 'TOMORROW' : weekday;
-        // Short date like "Wednesday, Feb 19"
         const shortDate = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
+        const visible = items.slice(0, CAP);
+        const extra   = items.slice(CAP);
+        const dayId   = `day-${key.replace(/-/g, '')}`;
+
+        const extraHtml = extra.length > 0 ? `
+            <div class="day-extra-rows" id="${dayId}-extra" style="display:none;">
+                ${extra.map(({ event, index }) => createEventRow(event, index)).join('')}
+            </div>
+            <button class="show-more-btn" id="${dayId}-toggle" onclick="toggleDayExpand('${dayId}', ${extra.length})">
+                Show ${extra.length} more ↓
+            </button>` : '';
+
         return `
-        <div class="day-group">
+        <div class="day-group" id="${dayId}">
             <div class="day-header${isToday ? ' today' : ''}">
                 <div class="day-header-left">
                     <span class="day-weekday">${label}</span>
@@ -859,7 +873,8 @@ function renderGroupedByDay(events) {
                 </div>
                 <span class="day-count">${items.length} event${items.length !== 1 ? 's' : ''}</span>
             </div>
-            ${items.map(({ event, index }) => createEventRow(event, index)).join('')}
+            ${visible.map(({ event, index }) => createEventRow(event, index)).join('')}
+            ${extraHtml}
         </div>`;
     }).join('');
 }
@@ -889,11 +904,27 @@ function createEventRow(event, index) {
                 <span class="event-category ${categoryClass}">${badgeLabel}</span>
             </div>
             <div class="event-row-meta">
+                ${timeStr ? `<span class="event-row-time">${escapeHtml(timeStr)}</span>` : ''}
                 ${location ? `<span class="event-row-location">${pinIcon}<span class="loc-text">${escapeHtml(location)}</span></span>` : ''}
             </div>
         </div>
         <span class="chevron">›</span>
     </div>`;
+}
+
+// Toggle per-day expand / collapse
+function toggleDayExpand(dayId, extraCount) {
+    const extra = document.getElementById(dayId + '-extra');
+    const btn   = document.getElementById(dayId + '-toggle');
+    if (!extra || !btn) return;
+    const expanded = extra.style.display !== 'none';
+    extra.style.display = expanded ? 'none' : '';
+    btn.textContent = expanded ? `Show ${extraCount} more ↓` : 'Show less ↑';
+
+    // After collapsing, scroll the day header back into view
+    if (expanded) {
+        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 // Show event detail modal

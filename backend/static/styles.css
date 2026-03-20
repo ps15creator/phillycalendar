@@ -1270,12 +1270,42 @@ body {
     flex-shrink: 0;
 }
 
+.event-row-time {
+    font-size: 0.78em;
+    color: var(--text-light);
+    font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .event-row-location {
     display: flex;
     align-items: center;
     gap: 4px;
     overflow: hidden;
     min-width: 0;
+}
+
+/* Show more / Show less per-day toggle */
+.show-more-btn {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px dashed #d1d5db;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.82em;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.show-more-btn:hover {
+    border-color: var(--green-dark, #1a4040);
+    color: var(--green-dark, #1a4040);
+    background: rgba(26, 64, 64, 0.04);
 }
 
 .loc-text {
