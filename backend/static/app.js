@@ -7,6 +7,7 @@ let currentCategory = 'all';
 let currentMonth = 'all';
 let currentNeighborhood = 'all';
 let currentTimeFilter = null; // null | 'today' | 'tomorrow' | 'weekend'
+let expandedDayId = null;     // ID of currently expanded day group (only one at a time)
 
 // Category badge labels (text-only, no emoji — keeps pills compact on mobile)
 const BADGE_LABELS = {
@@ -617,6 +618,8 @@ function updateActiveFiltersBar() {
 // Apply all filters
 function applyFilters() {
     showAllEvents = false;
+    expandedDayId = null;
+    hideCollapsePill();
     filteredEvents = allEvents.filter(event => {
         const matchesCategory = currentCategory === 'all' || event.category === currentCategory;
 
@@ -912,41 +915,120 @@ function createEventRow(event, index) {
     </div>`;
 }
 
+// Show / hide the floating collapse pill
+function showCollapsePill(dayId, label) {
+    const pill = document.getElementById('collapsePill');
+    const pillLabel = document.getElementById('collapsePillLabel');
+    if (!pill || !pillLabel) return;
+    pillLabel.textContent = 'Collapse ' + label;
+    pill.style.display = 'flex';
+    pill.offsetHeight; // force reflow for transition
+    pill.classList.add('visible');
+    pill._dayId = dayId; // store which day this pill controls
+}
+
+function hideCollapsePill() {
+    const pill = document.getElementById('collapsePill');
+    if (!pill) return;
+    pill.classList.remove('visible');
+    setTimeout(() => { pill.style.display = 'none'; }, 350);
+    pill._dayId = null;
+}
+
+// Called when the floating pill is tapped
+function collapseFromPill() {
+    const pill = document.getElementById('collapsePill');
+    if (!pill || !pill._dayId) return;
+    const dayId = pill._dayId;
+    // Find the extraCount from the toggle button
+    const btn = document.getElementById(dayId + '-toggle');
+    const match = btn?.textContent.match(/Show less/);
+    if (match) {
+        // Derive extraCount from the button's stored data
+        const extraCount = parseInt(btn.dataset.extraCount || '0');
+        collapseDayGroup(dayId, extraCount);
+    }
+}
+
+// Get the display label for a day ID (e.g. "day-20260321" → "Saturday" or "Mar 21")
+function getDayLabel(dayId) {
+    // dayId format: "day-YYYYMMDD"
+    const raw = dayId.replace('day-', '');
+    const year  = parseInt(raw.slice(0, 4));
+    const month = parseInt(raw.slice(4, 6)) - 1;
+    const day   = parseInt(raw.slice(6, 8));
+    const d = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((d - today) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays <= 6) {
+        return d.toLocaleDateString('en-US', { weekday: 'long' }); // e.g. "Saturday"
+    }
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); // e.g. "Mar 28"
+}
+
+// Collapse a specific day group
+function collapseDayGroup(dayId, extraCount) {
+    const extra = document.getElementById(dayId + '-extra');
+    const btn   = document.getElementById(dayId + '-toggle');
+    if (!extra || !btn) return;
+
+    hideCollapsePill();
+    expandedDayId = null;
+
+    const rows = Array.from(extra.querySelectorAll('.event-row'));
+    rows.reverse().forEach((row, i) => {
+        setTimeout(() => {
+            row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(6px)';
+        }, i * 50);
+    });
+    const rowFadeTime = rows.length * 50 + 200;
+    setTimeout(() => {
+        const currentHeight = extra.scrollHeight;
+        extra.style.maxHeight = currentHeight + 'px';
+        extra.offsetHeight;
+        extra.style.transition = 'max-height 0.5s ease';
+        extra.style.maxHeight = '0';
+        extra.classList.remove('expanded');
+        btn.textContent = `Show ${extraCount} more ↓`;
+    }, rowFadeTime);
+    setTimeout(() => {
+        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, rowFadeTime + 520);
+}
+
 // Toggle per-day expand / collapse
 function toggleDayExpand(e, dayId, extraCount) {
     e.stopPropagation();
     const extra = document.getElementById(dayId + '-extra');
     const btn   = document.getElementById(dayId + '-toggle');
     if (!extra || !btn) return;
+
+    // Store extraCount on button for pill to use
+    btn.dataset.extraCount = extraCount;
+
     const expanded = extra.classList.contains('expanded');
 
     if (expanded) {
-        // Collapse: stagger rows out bottom-to-top, then close container
-        const rows = Array.from(extra.querySelectorAll('.event-row'));
-        rows.reverse().forEach((row, i) => {
-            setTimeout(() => {
-                row.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateY(6px)';
-            }, i * 50);
-        });
-        const rowFadeTime = rows.length * 50 + 200;
-        setTimeout(() => {
-            const currentHeight = extra.scrollHeight;
-            extra.style.maxHeight = currentHeight + 'px';
-            extra.offsetHeight;
-            extra.style.transition = 'max-height 0.5s ease';
-            extra.style.maxHeight = '0';
-            extra.classList.remove('expanded');
-            btn.textContent = `Show ${extraCount} more ↓`;
-        }, rowFadeTime);
-        setTimeout(() => {
-            document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, rowFadeTime + 520);
+        collapseDayGroup(dayId, extraCount);
     } else {
+        // If another day is expanded, collapse it first silently
+        if (expandedDayId && expandedDayId !== dayId) {
+            const prevExtra = document.getElementById(expandedDayId + '-extra');
+            const prevBtn   = document.getElementById(expandedDayId + '-toggle');
+            if (prevExtra && prevBtn) {
+                prevExtra.style.maxHeight = '0';
+                prevExtra.classList.remove('expanded');
+                prevBtn.textContent = `Show ${prevBtn.dataset.extraCount || '?'} more ↓`;
+            }
+        }
+
+        expandedDayId = dayId;
+
         // Expand: animate container height, then stagger rows in
         const rows = extra.querySelectorAll('.event-row');
-        // Reset row states before expanding
         rows.forEach(row => {
             row.style.opacity = '0';
             row.style.transform = 'translateY(6px)';
@@ -956,11 +1038,10 @@ function toggleDayExpand(e, dayId, extraCount) {
         const targetHeight = extra.scrollHeight;
         extra.style.maxHeight = '0';
         extra.style.opacity = '1';
-        extra.offsetHeight; // force reflow
+        extra.offsetHeight;
         extra.style.maxHeight = targetHeight + 'px';
         extra.classList.add('expanded');
 
-        // Stagger each row in with a 60ms delay between them
         rows.forEach((row, i) => {
             setTimeout(() => {
                 row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
@@ -969,12 +1050,15 @@ function toggleDayExpand(e, dayId, extraCount) {
             }, 80 + i * 60);
         });
 
-        // Clear inline styles after transition so container is ready for next collapse
         setTimeout(() => {
             extra.style.maxHeight = '';
             extra.style.transition = '';
         }, 520);
+
         btn.textContent = 'Show less ↑';
+
+        // Show floating collapse pill
+        showCollapsePill(dayId, getDayLabel(dayId));
     }
 }
 
