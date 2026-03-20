@@ -360,6 +360,14 @@ class EventDatabase:
                 start_date = event.get('start_date', '')
                 source_url = event.get('source_url', '')
 
+                # Reject events with an explicit non-Philadelphia city
+                location = event.get('location', '')
+                if location and 'philadelphia' not in location.lower():
+                    # Allow if location is just a venue/street with no city info
+                    # (heuristic: no comma = no city component, likely a bare venue name)
+                    if ',' in location:
+                        continue
+
                 if not title or not start_date:
                     continue
 

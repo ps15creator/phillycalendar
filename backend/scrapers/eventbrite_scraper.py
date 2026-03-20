@@ -152,8 +152,10 @@ class EventbriteScraper(BaseScraper):
                     street = address.get('streetAddress', '')
                     city = address.get('addressLocality', 'Philadelphia')
                     state = address.get('addressRegion', 'PA')
-                    # Skip events not in Pennsylvania
+                    # Skip events not in Philadelphia, PA
                     if state and state.upper() not in ('PA', 'PENNSYLVANIA'):
+                        return None
+                    if city and 'philadelphia' not in city.lower():
                         return None
                     parts = [p for p in [venue_name, street, city, state] if p]
                     location = ', '.join(parts)
