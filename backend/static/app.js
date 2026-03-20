@@ -987,6 +987,10 @@ function collapseDayGroup(dayId, extraCount) {
     // Cancel any pending scroll-to-last-row from the expand animation
     if (expandScrollTimer) { clearTimeout(expandScrollTimer); expandScrollTimer = null; }
 
+    // Scroll to day header FIRST — before content shrinks — so the browser
+    // never snaps to the bottom when page height drops
+    document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
     hideCollapsePill();
     expandedDayId = null;
 
@@ -1005,13 +1009,10 @@ function collapseDayGroup(dayId, extraCount) {
 
     const totalFadeTime = rows.length * 50 + 180;
     setTimeout(() => {
-        // All rows are display:none — container is naturally 0 height
-        // Just lock it back to overflow:hidden for the next expand cycle
         extra.style.overflow = 'hidden';
         extra.style.maxHeight = '0';
         extra.classList.remove('expanded');
         btn.textContent = `Show ${extraCount} more ↓`;
-        document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, totalFadeTime);
 }
 
