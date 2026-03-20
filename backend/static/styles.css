@@ -1263,13 +1263,13 @@ body {
     background: #f3f4f6;
     color: #374151;
 }
-.category-running        { background: var(--green-light);  color: var(--green); }           /* Eagles green */
-.category-artsAndCulture { background: #f0e8ff;             color: var(--purple); }          /* Purple */
-.category-music          { background: #fde8ea;             color: var(--red-dark); }         /* Phillies red */
-.category-foodAndDrink   { background: #fef0e6;             color: #c43b00; }                /* Flyers orange */
-.category-community      { background: #e0f0fb;             color: var(--sixers-blue); }      /* 76ers blue */
-.category-business       { background: #e8ecf7;             color: var(--navy); }             /* Phillies navy */
-.category-other          { background: #fef3c7;             color: #92400e; }                 /* Amber */
+.category-running        { background: #e6f4f5; color: #004C54; }   /* Eagles midnight green */
+.category-artsAndCulture { background: #f0e8ff; color: #5b21b6; }   /* Purple */
+.category-music          { background: #fde8ea; color: #b0101e; }   /* Phillies red */
+.category-foodAndDrink   { background: #fef0e6; color: #c43b00; }   /* Flyers orange */
+.category-community      { background: #e0f0fb; color: #005a99; }   /* 76ers blue */
+.category-business       { background: #f1f3f5; color: #4b5563; }   /* Neutral slate */
+.category-other          { background: #fef3c7; color: #92400e; }   /* Amber */
 
 /* Meta row: location · price — clean single line */
 .event-row-meta {
@@ -1404,14 +1404,6 @@ body {
     transition: color 0.15s, transform 0.15s;
 }
 
-/* Category colors */
-.category-running        { background: #d1fae5; color: #065f46; }
-.category-artsAndCulture { background: #ede9fe; color: #5b21b6; }
-.category-music          { background: #fce7f3; color: #9d174d; }
-.category-foodAndDrink   { background: #fef3c7; color: #92400e; }
-.category-community      { background: #dbeafe; color: #1e40af; }
-.category-business       { background: #e0f2fe; color: #075985; }
-.category-other          { background: #f3f4f6; color: #4b5563; }
 
 /* ============================================================
    EMPTY STATE
@@ -1454,7 +1446,7 @@ body {
 .load-more-wrapper {
     display: flex;
     justify-content: center;
-    padding: 32px 16px 16px;
+    padding: 24px 16px 20px;
 }
 
 .load-more-btn {
@@ -1668,11 +1660,11 @@ body {
    ============================================================ */
 .site-footer {
     background: linear-gradient(180deg, #003a42 0%, #002d35 100%);
-    color: rgba(255,255,255,0.75);
+    color: rgba(255,255,255,0.9);
     text-align: center;
     font-size: 0.88em;
     border-top: 3px solid var(--red);
-    margin-top: 48px;
+    margin-top: 24px;
 }
 
 /* PHILLY letter circles */
@@ -1725,7 +1717,7 @@ body {
     margin-bottom: 8px;
 }
 .footer-brand a {
-    color: var(--gold);
+    color: #fbbf24;
     text-decoration: none;
     font-weight: 700;
 }
@@ -1742,11 +1734,11 @@ body {
 
 .footer-sub {
     font-size: 0.85em;
-    color: rgba(255,255,255,0.75);
+    color: rgba(255,255,255,0.9);
     margin-top: 4px;
 }
 .footer-sub a {
-    color: var(--gold);
+    color: #fbbf24;
     text-decoration: none;
 }
 .footer-sub a:hover { text-decoration: underline; }
@@ -2024,17 +2016,5 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='11' fill='none' stroke='%23006BB6' stroke-width='2'/%3E%3Cline x1='14' y1='14' x2='14' y2='7' stroke='%23006BB6' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='14' y1='14' x2='19' y2='17' stroke='%23006BB6' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
-/* ============================================================
-   EVENT CATEGORY BADGES — LIGHT COLORED PILLS (v0 style)
-   ============================================================ */
-
-/* Per-category: light bg + matching text color */
-.category-running        { background: #dcfce7; color: #166534; }
-.category-music          { background: #fee2e2; color: #991b1b; }
-.category-artsAndCulture { background: #ede9fe; color: #5b21b6; }
-.category-foodAndDrink   { background: #fef3c7; color: #92400e; }
-.category-community      { background: #dbeafe; color: #1e40af; }
-.category-business       { background: #e0f2fe; color: #075985; }
-.category-other          { background: #f3f4f6; color: #374151; }
 
 /* (old philly-pride-strip and marquee removed — replaced by neighborhood-strip and footer-philly-letters) */
