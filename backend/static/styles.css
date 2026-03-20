@@ -329,26 +329,27 @@ body {
 }
 
 .hero-time-pill {
-    padding: 7px 16px;
+    padding: 8px 18px;
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: transparent;
-    color: rgba(255,255,255,0.75);
+    border: 1.5px solid rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.12);
+    color: white;
     font-size: 0.85em;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
 }
 
 .hero-time-pill:hover {
-    border-color: rgba(255,255,255,0.7);
-    color: #fff;
+    background: rgba(255,255,255,0.22);
+    border-color: white;
 }
 
 .hero-time-pill.active {
-    background: var(--gold, #e8b84b);
-    border-color: var(--gold, #e8b84b);
-    color: #111;
+    background: white;
+    border-color: white;
+    color: var(--green);
     font-weight: 700;
 }
 
@@ -1262,13 +1263,13 @@ body {
     background: #f3f4f6;
     color: #374151;
 }
-.category-running        { background: #dcfce7; color: #166534; }
-.category-artsAndCulture { background: #dbeafe; color: #1e40af; }
-.category-music          { background: #fef9c3; color: #854d0e; }
-.category-foodAndDrink   { background: #fee2e2; color: #991b1b; }
-.category-community      { background: #f3e8ff; color: #6b21a8; }
-.category-business       { background: #e0f2fe; color: #075985; }
-.category-other          { background: #f3f4f6; color: #374151; }
+.category-running        { background: var(--green-light);  color: var(--green); }           /* Eagles green */
+.category-artsAndCulture { background: #f0e8ff;             color: var(--purple); }          /* Purple */
+.category-music          { background: #fde8ea;             color: var(--red-dark); }         /* Phillies red */
+.category-foodAndDrink   { background: #fef0e6;             color: #c43b00; }                /* Flyers orange */
+.category-community      { background: #e0f0fb;             color: var(--sixers-blue); }      /* 76ers blue */
+.category-business       { background: #e8ecf7;             color: var(--navy); }             /* Phillies navy */
+.category-other          { background: #fef3c7;             color: #92400e; }                 /* Amber */
 
 /* Meta row: location · price — clean single line */
 .event-row-meta {
