@@ -745,10 +745,7 @@ function createEventRow(event, index) {
     const categoryClass = `category-${event.category}`;
     const badgeLabel = BADGE_LABELS[event.category] || (event.category ? event.category.charAt(0).toUpperCase() + event.category.slice(1) : 'Other');
     const location = event.location || '';
-    const price = event.price || '';
-
     const pinIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-    const dollarIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`;
 
     return `
     <div class="event-row" data-event-index="${index}">
@@ -759,8 +756,6 @@ function createEventRow(event, index) {
             </div>
             <div class="event-row-meta">
                 ${location ? `<span class="event-row-location">${pinIcon}<span class="loc-text">${escapeHtml(location)}</span></span>` : ''}
-                ${location && price ? `<span class="meta-dot">·</span>` : ''}
-                ${price ? `<span class="event-row-price">${dollarIcon} ${escapeHtml(price)}</span>` : ''}
             </div>
         </div>
         <span class="chevron">›</span>
