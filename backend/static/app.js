@@ -987,30 +987,19 @@ function collapseDayGroup(dayId, extraCount) {
     // Cancel any pending scroll-to-last-row from the expand animation
     if (expandScrollTimer) { clearTimeout(expandScrollTimer); expandScrollTimer = null; }
 
-    // Scroll to day header FIRST — before content shrinks — so the browser
-    // never snaps to the bottom when page height drops
-    document.getElementById(dayId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     hideCollapsePill();
     expandedDayId = null;
 
-    // Fade all rows out together (no stagger) — quick but not jarring
-    const rows = Array.from(extra.querySelectorAll('.event-row'));
-    rows.forEach(row => {
-        row.classList.remove('row-fade-in');
-        row.classList.add('row-fade-out');
+    // Collapse instantly — no scroll, no animation
+    // The browser's scroll anchoring keeps the user's view stable naturally
+    Array.from(extra.querySelectorAll('.event-row')).forEach(row => {
+        row.style.display = 'none';
+        row.classList.remove('row-fade-in', 'row-fade-out');
     });
-
-    setTimeout(() => {
-        rows.forEach(row => {
-            row.style.display = 'none';
-            row.classList.remove('row-fade-out');
-        });
-        extra.style.overflow = 'hidden';
-        extra.style.maxHeight = '0';
-        extra.classList.remove('expanded');
-        btn.textContent = `Show ${extraCount} more ↓`;
-    }, 150);
+    extra.style.overflow = 'hidden';
+    extra.style.maxHeight = '0';
+    extra.classList.remove('expanded');
+    btn.textContent = `Show ${extraCount} more ↓`;
 }
 
 // Toggle per-day expand / collapse
@@ -1064,13 +1053,6 @@ function toggleDayExpand(e, dayId, extraCount) {
             row.style.display = '';
             row.offsetHeight; // force reflow so animation triggers fresh
             row.classList.add('row-fade-in');
-            // After last row is visible, scroll it into view
-            if (i === rows.length - 1) {
-                expandScrollTimer = setTimeout(() => {
-                    expandScrollTimer = null;
-                    row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 120);
-            }
         }, i * 70);
     });
 
