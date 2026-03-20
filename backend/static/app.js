@@ -38,22 +38,44 @@ function normalizeTitle(title) {
     });
 }
 
-// Keyword mapping: neighbourhood pill label → location substrings to match
+// Keyword mapping: neighbourhood pill label → location substrings to match.
+// ONLY entries in this map ever appear in the neighborhood strip — no auto-discovery.
 const NEIGHBORHOOD_KEYWORDS = {
     'Rittenhouse':        ['rittenhouse', 'sansom', 'walnut street'],
-    'Fairmount Park':     ['fairmount', 'kelly drive', 'west river drive', 'schuylkill', 'wissahickon'],
-    'Old City':           ['old city', 'independence', '2nd st', 'old city arts'],
-    'Northern Liberties': ['northern liberties', 'liberty'],
-    'Queen Village':      ['queen village', 'south street'],
-    'Graduate Hospital':  ['graduate hospital'],
+    'Center City':        ['center city', 'city hall', 'market st', 'market street', 'broad street', 'broad st', 'chestnut st', 'chestnut street', 'juniper', 'dilworth'],
+    'Old City':           ['old city', 'independence', '2nd st', '3rd st', 'old city arts', 'elfreth'],
+    'Society Hill':       ['society hill', 'headhouse'],
+    'Washington Sq West': ['washington square', 'wash west', 'pine street', 'spruce street'],
+    'Chinatown':          ['chinatown', 'race street', '10th st', '11th st'],
+    'Logan Square':       ['logan square', 'logan circle', 'parkway', 'ben franklin pkwy', 'benjamin franklin pkwy'],
+    'Fairmount':          ['fairmount', 'eastern state', 'girard ave', 'fairmount ave'],
+    'Fairmount Park':     ['fairmount park', 'kelly drive', 'west river drive', 'wissahickon'],
+    'Northern Liberties': ['northern liberties', 'n liberties'],
+    'Fishtown':           ['fishtown', 'frankford ave', 'johnny brenda', 'girard'],
     'Kensington':         ['kensington'],
-    'Fishtown':           ['fishtown', 'frankford ave', 'johnny brenda'],
-    'Manayunk':           ['manayunk'],
-    'Brewerytown':        ['brewerytown', 'yards brewing'],
-    'Point Breeze':       ['point breeze', 'passyunk', 'grays ferry'],
-    'Chestnut Hill':      ['chestnut hill'],
-    'West Philly':        ['west philly', 'clark park', '43rd', 'university of pennsylvania', 'franklin field'],
+    'Port Richmond':      ['port richmond', 'richmond st'],
+    'Bridesburg':         ['bridesburg'],
+    'Queen Village':      ['queen village', 'south street'],
+    'Bella Vista':        ['bella vista', 'christian street', '9th street', 'italian market'],
+    'Graduate Hospital':  ['graduate hospital', 'grad hospital'],
+    'Point Breeze':       ['point breeze', 'grays ferry'],
     'Passyunk':           ['passyunk', 'east passyunk'],
+    'South Philly':       ['south philly', 'south philadelphia', 'pattison', 'xfinity live', 'citizens bank park', 'lincoln financial', 'wells fargo center'],
+    'University City':    ['university city', 'university of pennsylvania', 'penn medicine', 'drexel', 'upen', 'upenn', '40th', '38th', '34th street', 'clark park'],
+    'West Philly':        ['west philly', 'west philadelphia', '43rd', 'cobbs creek', 'spruce hill', 'cedar park'],
+    'Brewerytown':        ['brewerytown', 'yards brewing', 'girard estates'],
+    'Strawberry Mansion': ['strawberry mansion'],
+    'Germantown':         ['germantown', 'tulpehocken', 'chelten'],
+    'Mt. Airy':           ['mt. airy', 'mt airy', 'mount airy', 'lincoln drive'],
+    'Chestnut Hill':      ['chestnut hill', 'germantown ave'],
+    'Roxborough':         ['roxborough', 'manayunk ave'],
+    'Manayunk':           ['manayunk'],
+    'East Falls':         ['east falls', 'henry ave'],
+    'Hunting Park':       ['hunting park'],
+    'Olney':              ['olney', 'fifth street', '5th street highway'],
+    'Mayfair':            ['mayfair', 'frankford'],
+    'Northeast Philly':   ['northeast philly', 'northeast philadelphia', 'bustleton', 'rhawnhurst', 'fox chase', 'torresdale', 'holmesburg', 'pennypack'],
+    'Reading Terminal':   ['reading terminal', '12th and arch', 'filbert street'],
 };
 let bookmarkedIds = new Set(); // Track bookmarked event IDs (stored in localStorage)
 let currentUser = null;        // { id, email, display_name } when logged in, else null
@@ -311,15 +333,13 @@ function updateLandmarkBadges() {
     if (badgeRittenhouse) badgeRittenhouse.textContent = rittenhouseCount ? `${rittenhouseCount} events` : 'Explore';
 }
 
-// Build neighborhood pills dynamically from live event data.
-// - Shows only known neighborhoods that have ≥1 matching event.
-// - Scans unmatched locations for new neighborhood names and adds them too.
-// - Registers any new neighborhoods in NEIGHBORHOOD_KEYWORDS so filtering works.
+// Build neighborhood pills from NEIGHBORHOOD_KEYWORDS — only shows curated Philly
+// neighborhoods that have ≥1 matching event. No auto-discovery from raw location strings.
 function buildNeighborhoodStrip() {
     const track = document.querySelector('.neighborhood-pills-track');
     if (!track || !allEvents.length) return;
 
-    // Step 1: known neighborhoods that have ≥1 event
+    // Known neighborhoods that have ≥1 event
     const activeKnown = Object.keys(NEIGHBORHOOD_KEYWORDS).filter(name => {
         const keywords = NEIGHBORHOOD_KEYWORDS[name];
         return allEvents.some(ev => {
@@ -328,48 +348,8 @@ function buildNeighborhoodStrip() {
         });
     });
 
-    // Step 2: events not matched by any known keyword → scan for new neighborhoods
-    const allKnownKeywords = Object.values(NEIGHBORHOOD_KEYWORDS).flat();
-    // Terms to skip — not Philly neighborhoods
-    const skipTerms = new Set([
-        'philadelphia', 'pa', 'phila', 'united states', 'us', 'usa',
-        'allentown', 'pittsburgh', 'harrisburg', 'lancaster', 'reading',
-        'norristown', 'media', 'villanova', 'haverford', 'oaks',
-        'bala cynwyd', 'malvern', 'wayne', 'ardmore', 'paoli',
-        'conshohocken', 'ambler', 'doylestown', 'wilmington',
-    ]);
-    const newNeighborhoods = new Map(); // display name → keyword
-
-    allEvents.forEach(ev => {
-        const loc = ev.location || '';
-        const lower = loc.toLowerCase();
-        if (!loc || allKnownKeywords.some(kw => lower.includes(kw))) return;
-        // Parse "Venue Name, Neighborhood, PA" — skip first segment (venue)
-        const parts = loc.split(',').map(p => p.trim()).filter(Boolean);
-        for (const part of parts.slice(1)) {
-            const lp = part.toLowerCase().trim();
-            if (
-                !skipTerms.has(lp) &&
-                part.length > 2 &&
-                part.length < 35 &&
-                /^[A-Za-z][A-Za-z\s\-'\.]+$/.test(part) && // letters only — rejects phone numbers & digits
-                !part.includes(':') &&                       // rejects "PH: +1..." style labels
-                !NEIGHBORHOOD_KEYWORDS[part] &&
-                !newNeighborhoods.has(part)
-            ) {
-                newNeighborhoods.set(part, lp);
-            }
-        }
-    });
-
-    // Step 3: register new neighborhoods so handleNeighborhoodFilter can match them
-    for (const [name, kw] of newNeighborhoods) {
-        NEIGHBORHOOD_KEYWORDS[name] = [kw];
-    }
-
-    // Step 4: build pills (duplicated for seamless marquee loop)
-    const allNames = [...activeKnown, ...newNeighborhoods.keys()];
-    if (!allNames.length) return;
+    if (!activeKnown.length) return;
+    const allNames = activeKnown;
 
     function pill(name, hidden = false) {
         const attrs = hidden ? ' aria-hidden="true" tabindex="-1"' : '';
