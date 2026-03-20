@@ -12,6 +12,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _is_philadelphia_location(location: str) -> bool:
+    """Return True if the location is in Philadelphia (or has no city component).
+
+    This is the single source of truth for the geo-gate used at every DB write.
+    Rules:
+      - Empty / None          → allow  (hard-coded Philly scrapers sometimes omit location)
+      - Contains "philadelphia" or "philly" (case-insensitive) → allow
+      - No comma              → allow  (bare venue/street name, no city component;
+                                        all hard-coded Philly venue scrapers include
+                                        "Philadelphia" when a city IS present)
+      - Has a comma but no Philadelphia keyword → reject
+    """
+    if not location:
+        return True
+    loc = location.lower().strip()
+    if 'philadelphia' in loc or 'philly' in loc:
+        return True
+    # No comma means no "city, state" structure — treat as a venue-only string
+    if ',' not in loc:
+        return True
+    # Structured location (has comma) but no Philadelphia → outside the city
+    return False
+
+
 class EventDatabase:
     """Database handler supporting SQLite and PostgreSQL"""
 
@@ -292,7 +316,11 @@ class EventDatabase:
 
     # Event CRUD Operations
     def add_event(self, **kwargs) -> int:
-        """Add a new event and return event_id"""
+        """Add a new event and return event_id. Rejects non-Philadelphia locations."""
+        location = kwargs.get('location', '')
+        if not _is_philadelphia_location(location):
+            logger.info(f"Rejected non-Philadelphia event: {kwargs.get('title')!r} @ {location!r}")
+            return -1
         conn = self.get_connection()
         cursor = conn.cursor()
 
@@ -360,15 +388,12 @@ class EventDatabase:
                 start_date = event.get('start_date', '')
                 source_url = event.get('source_url', '')
 
-                # Reject events with an explicit non-Philadelphia city
-                location = event.get('location', '')
-                if location and 'philadelphia' not in location.lower():
-                    # Allow if location is just a venue/street with no city info
-                    # (heuristic: no comma = no city component, likely a bare venue name)
-                    if ',' in location:
-                        continue
-
                 if not title or not start_date:
+                    continue
+
+                location = event.get('location', '')
+                if not _is_philadelphia_location(location):
+                    logger.info(f"Rejected non-Philadelphia event: {title!r} @ {location!r}")
                     continue
 
                 batch_key = (title, str(start_date))
@@ -489,6 +514,45 @@ class EventDatabase:
             conn.rollback()
             logger.error(f"Error deleting event: {e}")
             return False
+        finally:
+            self.release_connection(conn)
+
+    def purge_non_philadelphia_events(self) -> int:
+        """Delete any stored events whose location has a city component that is not
+        Philadelphia. Returns the number of rows deleted.
+
+        This mirrors the _is_philadelphia_location() logic:
+          keep if: location is empty, contains 'philadelphia'/'philly', or has no comma.
+          delete if: has a comma but no Philadelphia keyword.
+        """
+        conn = self.get_connection()
+        try:
+            cursor = conn.cursor()
+            if self.use_postgres:
+                cursor.execute("""
+                    DELETE FROM events
+                    WHERE location IS NOT NULL
+                      AND location LIKE '%,%'
+                      AND LOWER(location) NOT LIKE '%philadelphia%'
+                      AND LOWER(location) NOT LIKE '%philly%'
+                """)
+            else:
+                cursor.execute("""
+                    DELETE FROM events
+                    WHERE location IS NOT NULL
+                      AND location LIKE '%,%'
+                      AND LOWER(location) NOT LIKE '%philadelphia%'
+                      AND LOWER(location) NOT LIKE '%philly%'
+                """)
+            deleted = cursor.rowcount
+            conn.commit()
+            if deleted:
+                logger.info(f"purge_non_philadelphia_events: removed {deleted} non-Philly events")
+            return deleted
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error purging non-Philadelphia events: {e}")
+            return 0
         finally:
             self.release_connection(conn)
 

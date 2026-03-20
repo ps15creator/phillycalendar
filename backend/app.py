@@ -157,6 +157,15 @@ def _start_scheduler():
         replace_existing=True
     )
 
+    # Purge non-Philadelphia events daily at 3:05 AM
+    scheduler.add_job(
+        func=db.purge_non_philadelphia_events,
+        trigger=CronTrigger(hour=3, minute=5),
+        id='purge_non_philly_events',
+        name='Purge Non-Philadelphia Events',
+        replace_existing=True
+    )
+
     # Cleanup expired OTP tokens nightly at 3:30 AM
     scheduler.add_job(
         func=db.cleanup_expired_otps,
@@ -718,6 +727,8 @@ def update_profile():
 # Guard prevents duplicate start in Flask debug reloader; gunicorn doesn't set this var
 if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
     _start_scheduler()
+    # One-time purge of any non-Philadelphia events already in the database
+    db.purge_non_philadelphia_events()
 
 
 if __name__ == '__main__':
